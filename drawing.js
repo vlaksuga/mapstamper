@@ -350,7 +350,7 @@
 
         for(var i = currentPosition.y;i<currentPosition.y+50;i++){
             for(var ii = 0;ii<50;ii++){
-                var a18 = ((i*w)+currentPosition.x+i)*4;
+                var a18 = ((i*w)+currentPosition.x+ii)*4;
                 ida.data[a18+3] = 0;
             }
         }
