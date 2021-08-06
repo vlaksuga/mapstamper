@@ -369,7 +369,7 @@
             for(var ii = 0;ii<5;ii++){
                 var a18 = (((i+currentPosition.y)*w)+currentPosition.x+ii)*4;
 
-                if(ssssss[currentPosition.y][currentPosition.x]){
+                if(ssssss[i][ii]){
                     ida.data[a18+3] = 0;
                 }
 
