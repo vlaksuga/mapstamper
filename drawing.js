@@ -356,7 +356,7 @@
               *
 
         */
-       var ssssss = [[false,false,true,false,false]
+       var ssssss = [[false,false,true,false,false],
                      [false,true,true,true,false],
                      [true,true,true,true,true],
                      [false,true,true,true,false],
