@@ -345,7 +345,18 @@
     function stampBackground(evt) {
         let currentPosition = getMousePos(evt);
         let stempSize = getStempSize();
-        gctx.clearRect(currentPosition.x, currentPosition.y, 50, 50);
+        var w = 800;
+        var ida = gctx.getImageData(0,0,w,800);
+
+        for(var i = currentPosition.y;i<currentPosition.y+50;i++){
+            for(var ii = 0;ii<50;ii++){
+                var a18 = ((i*w)+currentPosition.x+i)*4;
+                ida.data[a18+3] = 0;
+            }
+        }
+
+        gctx.putImageData(ida,0,0);
+
     }
 
     // STAMP SYMBOL
