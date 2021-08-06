@@ -348,10 +348,32 @@
         var w = 800;
         var ida = gctx.getImageData(0,0,w,800);
 
-        for(var i = currentPosition.y;i<currentPosition.y+50;i++){
-            for(var ii = 0;ii<50;ii++){
-                var a18 = ((i*w)+currentPosition.x+ii)*4;
-                ida.data[a18+3] = 0;
+        /*
+              *
+             ***
+            *****
+             ***
+              *
+
+        */
+       var ssssss = [[false,false,true,false,false]
+                     [false,true,true,true,false],
+                     [true,true,true,true,true],
+                     [false,true,true,true,false],
+                     [false,false,true,false,false]];     
+
+
+       
+
+        for(var i = 0;i<5;i++){
+            for(var ii = 0;ii<5;ii++){
+                var a18 = (((i+currentPosition.y)*w)+currentPosition.x+ii)*4;
+
+                if(ssssss[currentPosition.y][currentPosition.x]){
+                    ida.data[a18+3] = 0;
+                }
+
+                
             }
         }
 
