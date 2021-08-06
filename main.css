@@ -1,0 +1,154 @@
+:root {
+    /* COLORS */
+    --main-bg-color: hsla(0, 0%, 90%, 100%);
+    --header-bg-color: hsla(0, 0%, 30%, 100%);
+    --active-color: hsla(200, 91%, 63%, 100%);
+}
+html {
+    background-color: var(--main-bg-color);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    line-height: 1.5em;    
+}
+
+ul  {
+    list-style-type: none;
+}
+
+#app {
+    width: 100vw;        
+}
+
+header {
+    width: 100vw;
+    height: 70px;
+}
+
+header .title {
+    height: 70px;
+    width: 200px;
+}
+
+header .title h3 {
+    color: black;
+    padding: 20px;
+}
+
+img#currentBrush {
+    position: absolute;    
+    top: 0px;
+    left: 0px;
+    z-index: 9;
+}
+
+main {
+    display: flex;
+    flex-direction: row;
+}
+
+div#sidebar {
+    width: 250px;
+    padding: 20px;
+}
+
+div#canvasContainer {
+    position: relative;
+    background-color: lightgray;
+    overflow: auto auto;
+    width: calc(100% - 500px);
+    height: 800px;
+}
+
+div#asset {
+    width: 100vw;
+    background-color: burlywood;
+}
+
+div#history {
+    width: 250px;
+    height: 800px;
+}
+
+div#asset ul {
+
+    display: flex;    
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+div#asset ul li img {    
+    width: 80px;
+    height: 80px;
+}
+
+.colorButtons {
+    display: block;
+    margin: 20px 0;
+}
+
+canvas {
+    background-color: transparent;
+    cursor: crosshair;
+}
+
+canvas#canvas {
+    left: 230px;
+    top: 45px;
+}
+
+.btn {
+    margin-bottom: 10px;
+    width: 100%;
+}
+input {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.input-group {
+    margin-bottom: 10px;
+}
+
+.toolsButtons .btn {
+    width: 48%;
+}
+
+.sizeButtons .btn {
+    width: 48%;
+}
+
+.colorpicker {
+    background: transparent;
+    height: 40px;
+}
+
+.stack {
+    border-radius: 4px;
+    margin: 4px;    
+    padding: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.stack.active {
+    background-color: var(--active-color);
+}
+
+.stack.pending {
+    background-color: gray;
+}
+
+.stack .img {
+    width: 15px;
+    height: 15px;
+}
+
+#foreImage,
+#backImage
+ {
+    width: 100%;
+}
