@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Document</title>
 </head>
 
@@ -16,105 +17,94 @@
         <header>
             <div class="title">
                 <h3>MAP STAMPER</h3>
-            </div>            
+            </div>
+            <div class="controlBox">
+                <span id="saveToImage" class="material-icons active">save_alt</span>
+            </div>       
         </header>
 
-        <main>            
-            <div id="sidebar">
-                <h3>SIDE BAR</h3>
+        <div id="sidebar" class="toolbox">
 
-                <div class="currentSymbol">
-                    <h5>CURRENT SYMBOL</h5>
-                    <img id="currentSymbol" src="./asset/img/favorite_black.svg" alt="symbol" style="width: 120px; height: auto;">
-                </div>
-    
-                <div class="stampSize">
-                    <h5>Stamp Size (<span id="showStampSize">25</span>)</h5>
-                    <input type="range" min="1" max="100" value="25" step="1" id="controlStampSize">
-                </div>
-    
-                <div class="colorButtons" style="display: none;">
-                    <h5>BACKGROUND COLOR</h5>
-                    <input type="color" value="#ffffff" id="bgcolorpicker" class="colorpicker">
-                </div>
+            <div class="currentSymbol">
+                <h5>Current Stamp</h5>
+                <img id="currentSymbol" src="./asset/img/favorite_black.svg" alt="symbol" style="width: 120px; height: auto;">
+            </div>
 
+            <div class="stampSize">
+                <h5>Stamp Size (<span id="showStampSize">25</span>)</h5>
+                <input type="range" min="1" max="100" value="25" step="1" id="controlStampSize">
+            </div>
+
+            <div class="canvasPattern">
                 <div class="foregroundPattern">
-                    <h5>FOREGROUND PATTERN</h5>
+                    <h5>Background</h5>
                     <img id="foreImage" src="./asset/img/texture_Icesnow_04.png" alt="foreground">
                 </div>
-
+    
                 <div class="backgroundPattern">
-                    <h5>BACKGROUND PATTERN</h5>
+                    <h5>Foreground</h5>
                     <img id="backImage" src="./asset/img/texture_Land_02.png" alt="background">
                 </div>
-        
-                <div class="toolsButtons">
-                    <h5>Tools</h5>
-                    <button id="undoButton">            
-                        UNDO
-                    </button>
-                    <button id="redoButton">            
-                        REDO
-                    </button>                    
-                </div>    
-        
-                <div class="fuzziness">            
-                    <h5>Fuzziness</h5>         
-                    <input type="checkbox" name="isFuzz" id="isFuzziness">			
-                </div>
-
-                <div class="dragMode">            
-                    <h5>DRAG MODE</h5>         
-                    <input type="checkbox" name="isDrag" id="isDragMode">			
-                </div>
-
-                <div class="backMode">            
-                    <h5>BACKGROUND MODE</h5>         
-                    <input type="checkbox" name="isBack" id="isBackMode">			
-                </div>
-
-                <div class="stampSize">
-                    <h5>Drag Distance (<span id="showDragDistance">25</span>)</h5>
-                    <input type="range" min="25" max="200" value="25" step="1" id="controlDragDistance">
-                </div>
-        
-                <div class="canvasSize">
-                    <h5>Canvas</h5>
-                    <div class="input-group">
-                        <span class="input-group-addon">X (<span id="showCanvasXSize">800</span>) </span>
-                        <input type="range" min=300 max="2000" id="sizeX" placeholder="sizeX" value="800" class="size">
-                    </div>
-                    <div class="input-group">
-                        <span class="input-group-addon">Y (<span id="showCanvasYSize">800</span>) </span>
-                        <input type="range" min=300 max="2000" id="sizeY" placeholder="sizeY" value="800" class="size">
-                    </div>                    
-                </div>
+            </div>
     
-                <div class="Storage" style="display: none;">
-                    <h5>Storage</h5>
-                    <input type="button" value="Save" class="btn btn-warning" id="save">
-                    <input type="button" value="Load" class="btn btn-warning" id="load">
-                    <input type="button" value="Clear" class="btn btn-warning" id="clearCache">
-                </div>
-    
-                <div class="extra">
-                    <h5>Extra</h5>
-                    <a id="saveToImage" class="btn btn-warning">Download</a>
-                </div>
-    
-            </div>                    
+            <div class="fuzziness check">            
+                <input type="checkbox" name="isFuzz" id="isFuzziness">	
+                <h5>Fuzziness</h5>                         		
+            </div>
 
+            <div class="dragMode check">
+                <input type="checkbox" name="isDrag" id="isDragMode">
+                <h5>Drag Mode</h5>                	
+            </div>
+
+            <div class="backMode check">            
+                <input type="checkbox" name="isBack" id="isBackMode">
+                <h5>Background Mode</h5>
+            </div>
+
+            <div class="stampSize">
+                <h5>Drag Distance (<span id="showDragDistance">25</span>)</h5>
+                <input type="range" min="25" max="200" value="25" step="1" id="controlDragDistance">
+            </div>
+    
+            <div class="canvasSize">
+                <h5>Canvas</h5>
+                <div class="input-group">
+                    <span class="input-group-addon">X (<span id="showCanvasXSize">600</span>) </span>
+                    <input type="range" min=300 max="2000" id="sizeX" placeholder="sizeX" value="600" class="size">
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">Y (<span id="showCanvasYSize">600</span>) </span>
+                    <input type="range" min=300 max="2000" id="sizeY" placeholder="sizeY" value="600" class="size">
+                </div>                    
+            </div>
+
+            <div class="Storage" style="display: none;">
+                <h5>Storage</h5>
+                <input type="button" value="Save" class="btn btn-warning" id="save">
+                <input type="button" value="Load" class="btn btn-warning" id="load">
+                <input type="button" value="Clear" class="btn btn-warning" id="clearCache">
+            </div>
+
+        </div>    
+
+        <main>                            
             <div id="canvasContainer">
                 <!-- canvas here -->
             </div>
-
-            <div id="history">
-                <ul id="historyBoard">
-                    <!-- history here -->
-                </ul>
-                <button id="clearHistory">CLEAR</button>
-            </div>
         </main>
+
+        <div id="history" class="toolbox">
+            <h5>History</h5>
+            <div class="toolsButtons">
+                <span id="undoButton" class="material-icons">undo</span>
+                <span id="redoButton" class="material-icons">redo</span>
+            </div>    
+            <ul id="historyBoard">
+                <!-- history here -->
+            </ul>
+            <button id="clearHistory" style="display: none;">CLEAR</button>
+        </div>
 
         <div id="asset">
             <ul>
@@ -140,14 +130,11 @@
         </template>
 
         <template id="temp_history">
-            <li class="stack">
-                <div>
-                    
+            <li class="stack">                    
                     <span>
                         <img class="img">
                     </span>
-                    <span class="name">c</span>
-                </div>
+                    <span class="desc"></span>
             </li>
         </template>
 

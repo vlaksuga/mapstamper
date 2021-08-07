@@ -1,6 +1,7 @@
 	// SETTING ALL VARIABLES
 
     const stempSizeSuppressor = 25;
+
     
     var isMouseDown = false;
     var isDragMode = false;
@@ -16,6 +17,8 @@
     var historyBoard = document.getElementById('historyBoard');
     var foregroundImage = document.getElementById('foreImage');
     var backgroundImage = document.getElementById('backImage');
+    var undoButton = document.getElementById('undoButton');
+    var redoButton = document.getElementById('redoButton');
     var symbols = document.querySelectorAll('#asset ul li img');
     var ctx = canvas.getContext('2d');
     var gctx = gcanvas.getContext('2d');
@@ -26,8 +29,6 @@
     var currentStampSize = 25;
     var currentDragDistance = 25;
     var currentFuzziness = 1;
-    var currentColor = "rgb(200,20,100)";
-    var currentBg = "white";
     var currentSymbol = document.getElementById('currentSymbol');
     var currentCanvasSizeX = parseInt(document.getElementById("sizeX").value);
     var currentCanvasSizeY = parseInt(document.getElementById("sizeX").value);
@@ -43,13 +44,6 @@
     
 
     // EVENT HANDLERS
-    document.getElementById('bgcolorpicker').addEventListener('change', function() {
-        ctx.fillStyle = this.value;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        redraw();
-        currentBg = ctx.fillStyle;
-    });
-
     document.getElementById('controlStampSize').addEventListener('change', function() {
         currentStampSize = this.value;
         document.getElementById("showStampSize").innerHTML = this.value;
@@ -92,11 +86,11 @@
         isBackgroundMode = this.checked;
     });
 
-    document.getElementById('undoButton').addEventListener('click', function() {
+    undoButton.addEventListener('click', function() {
         undo();
     });
 
-    document.getElementById('redoButton').addEventListener('click', function() {
+    redoButton.addEventListener('click', function() {
         redo();
     });
 
@@ -190,8 +184,7 @@
             autoDraw(actionArray.length-(undoCount+1))
             undoCount++;        
         }                
-        console.log(`undoend: ${actionArray.length}`);
-        console.log(`undocnt: ${undoCount}`);
+        updateUndoButtons();
     }
 
     // REDO
@@ -203,6 +196,7 @@
         createCanvas();
         autoDraw(actionArray.length - (undoCount-1));
         undoCount--;
+        updateUndoButtons();
     }    
 
     // CANVAS EVENT HANDLERS
@@ -433,7 +427,7 @@
         isMouseDown = false
     }
 
-        // STORE ACTION
+    // STORE ACTION
     function store(action) {
         if(undoCount != 0) {
             var tempArray = [];
@@ -448,36 +442,58 @@
         console.log(`store : ${actionArray.length}`)
     }
 
+    // DRAW HISTORY
     function drawHistory(actionArray) {
         clearHistoryBoard();
         actionArray.forEach( function(action, index) {
-            historyBoard.appendChild(buildHistory(action, index));            
-        })
+            historyBoard.appendChild(cloneHistory(action, index));            
+        });
+        updateUndoButtons();
     }
 
-    function clearHistoryBoard(){
-        while (historyBoard.hasChildNodes()) {
-            historyBoard.removeChild(historyBoard.firstChild);
+    // UPDATE UNDO & REDO BUTTONS
+    function updateUndoButtons(){
+        undoButton.classList.remove('active');
+        redoButton.classList.remove('active');
+
+        if(actionArray.length == 0) {
+            return;
+        }
+        if(actionArray.length != undoCount) {
+            undoButton.classList.add('active');
+        };
+        if(undoCount > 0) {
+            redoButton.classList.add('active');
         }
     }
 
-    function buildHistory(action, index){
+    // CLAER HISTORY BOARD
+    function clearHistoryBoard(){
+        while (historyBoard.hasChildNodes()) {
+            historyBoard.removeChild(historyBoard.firstChild);
+        }        
+    }
+
+    // CLONE HISTORY
+    function cloneHistory(action, index){
         let temp = document.getElementById("temp_history");
         let clone = document.importNode(temp.content, true);
         historyStack = clone.querySelector('.stack');
-        historyName = clone.querySelector('.name');
+        historyDesc = clone.querySelector('.desc');
         historyImage = clone.querySelector('.img');
 
         historyStack.addEventListener('click', () => {            
             updateHistoryView(index);        
             undo(index);
         })        
-        historyName.innerHTML = `STAMP ADDED, Y : ${action.py+action.sy}`;                
+        historyDesc.innerHTML = `STAMP ADDED, X: ${action.px + action.sx}, Y : ${action.py + action.sy}`;                
         historyImage.src = action.src;
         return clone;
     }
 
     function updateHistoryView(index) {
+
+        // HISTORY LIST
         var list = document.querySelectorAll('.stack');            
         list.forEach( stack => {
             stack.classList.remove('active');
@@ -486,7 +502,7 @@
         list[index].classList.add('active');
         for(var i = index + 1; i < actionArray.length; i++) {
             list[i].classList.add('pending');
-        }
+        }        
     }
 
 
