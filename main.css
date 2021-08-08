@@ -13,7 +13,7 @@
     /* COLORS */
     --main-bg-color: hsla(0, 0%, 90%, 100%);
     --tool-bg-color: hsla(0, 0%, 40%, 100%);
-    --header-bg-color: hsla(0, 0%, 20%, 100%);
+    --header-bg-color: hsla(0, 0%, 0%, 100%);
     --active-color: hsla(200, 91%, 63%, 100%);
     --icon-inactive-color: hsla(0, 0%, 50%, 100%);
     --icon-active-color: hsla(0, 0%, 10%, 100%);   
@@ -42,25 +42,27 @@ header .controlBox { margin-right: 24px; display: flex; justify-content: end; fl
 
 main { display: flex; flex-direction: row; margin-top: calc(var(--header-height-dim) + 12px); }
 
-div#sidebar { position: fixed; top: calc(var(--header-height-dim) + 12px); left: 12px; width: 250px; height: 730px;}
+div#sidebar { position: fixed; top: var(--header-height-dim); left: 0px; width: 250px; height: calc(100vh - var(--header-height-dim));}
 div#sidebar > div { margin-bottom: 10px; }
 div#canvasContainer { position: relative; overflow: auto; width: calc(100% - 500px); height: 800px; margin-left: 300px;}
-div#history { position: fixed; top: calc(var(--header-height-dim) + 12px); right: 12px; width: 300px; height: 730px; }
+div#history { position: fixed; top: var(--header-height-dim); right: 0px; width: 300px; height: calc(100vh - var(--header-height-dim)); }
 div#asset { position: fixed; bottom: 12px; width: calc(100vw - 40px); left: 12px; }
 div#asset ul { display: flex; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; } 
 div#asset ul li img { width: 80px; height: 80px; border: 1px solid white ; margin-right: 8px; border-radius: var(--box-radius-dim); display: block;}
-.toolbox { color: white; padding: 12px; background-color: var(--header-bg-color); border-radius: var(--box-radius-dim); z-index: 10; overflow: auto; box-shadow: 10px 5px 5px var(--shadow-color);   -ms-overflow-style: none;  scrollbar-width: none; }
+.toolbox { color: black; padding: 12px; background-color: white; z-index: 10; overflow: auto; box-shadow: 10px 5px 5px var(--shadow-color);   -ms-overflow-style: none;  scrollbar-width: none; }
 .toolbox::-webkit-scrollbar {display: none;}
 input[type='range'] { width: 100% };
 .colorButtons { display: block; margin: 20px 0; }
 canvas { background-color: transparent; cursor: crosshair; }
 
+
 .check { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 12px}
 .canvasPattern { display: flex; flex-direction: row; width: 100%; justify-content: space-between; gap: 12px;}
+.canvasPattern img { border-radius: var(--box-radius-dim);}
 .input-group { margin-bottom: 10px; }
 .colorpicker { background: transparent; height: 40px; }
 
-.stack { border-radius: var(--box-radius-dim); margin: 4px 0; padding: 4px; background-color: white; cursor: pointer; display: flex; flex-direction: row; align-items: center; } 
+.stack { border-radius: var(--box-radius-dim); margin: 4px 0; padding: 4px; background-color: var(--main-bg-color); cursor: pointer; display: flex; flex-direction: row; align-items: center; } 
 .stack.active { background-color: var(--active-color); } 
 .stack.pending { background-color: gray; }
 .stack .desc { font-size: 12px; font-weight: 600; color: black;}
