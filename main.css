@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
 @font-face {
     font-family: 'Material Icons';
     font-style: normal;
@@ -29,7 +31,7 @@ html {
     background-color: var(--main-bg-color);
 }
 
-* { margin: 0; padding: 0; line-height: 1.5em;}
+* {font-family: 'Roboto', sans-serif; margin: 0; padding: 0; line-height: 1.5em;}
 
 ul  { list-style-type: none; }
 

@@ -123,6 +123,7 @@
 
     // AUTO DRAW
     function autoDraw(length) {
+        ctx.clearRect(0, 0, canvas.x, canvas.y);
         var rangedArray = getActiveRange(length);
         var sceneArray = sortAction(rangedArray);
         for (var i = 0; i < length; i++) {
@@ -173,7 +174,7 @@
     function undo(index) {
         console.log(`undostart : ${actionArray.length}`)
         if(undoCount >= actionArray.length) {
-            console.log('Nothing to redo');
+            console.log('Nothing to undo');
             return;
         }        
         ctx.clearRect(0, 0, canvas.width, canvas.height);   
@@ -181,22 +182,25 @@
             autoDraw(index + 1);
             undoCount = actionArray.length - index - 1;            
         } else {
-            autoDraw(actionArray.length-(undoCount+1))
+            autoDraw(actionArray.length- (undoCount + 1))
             undoCount++;        
         }                
         updateUndoButtons();
+        updateHistoryView(actionArray.length - undoCount - 1);
     }
 
     // REDO
     function redo() {
+        console.log(`redo undocnt ${undoCount}`);
         if(undoCount == 0) {
             console.log('Nothing to redo');
             return;
         }
         createCanvas();
-        autoDraw(actionArray.length - (undoCount-1));
+        autoDraw(actionArray.length - undoCount + 1);
         undoCount--;
         updateUndoButtons();
+        updateHistoryView(actionArray.length - undoCount - 1);
     }    
 
     // CANVAS EVENT HANDLERS
@@ -377,21 +381,19 @@
 
     // STAMP SYMBOL
     function stampSymbol(evt) {
+        if(isDragMode) {
+            lastSymbolPosition = currentPosition;
+        };
         let currentPosition = getMousePos(evt);
         let stempSize = getStempSize();
         let action = { act: ctx.drawImage, px: currentPosition.x, py: currentPosition.y, sx: stempSize.x, sy: stempSize.y, src:currentSymbol.src }
         store(action);
-        if(isDragMode) {
-            preserveLastPosition(currentPosition);
-        };
-        createCanvas();
         autoDraw(actionArray.length);
     }
 
     // PRESERVE LAST POSITION
     function preserveLastPosition(pos) {
         lastSymbolPosition = pos;
-        console.log(lastSymbolPosition);
     }
 
     // OVERLAY BRUSH
@@ -439,7 +441,6 @@
         actionArray.push(action);
         undoCount = 0;
         drawHistory(actionArray);
-        console.log(`store : ${actionArray.length}`)
     }
 
     // DRAW HISTORY
@@ -449,6 +450,7 @@
             historyBoard.appendChild(cloneHistory(action, index));            
         });
         updateUndoButtons();
+        updateHistoryView(actionArray.length - 1);
     }
 
     // UPDATE UNDO & REDO BUTTONS
@@ -459,6 +461,7 @@
         if(actionArray.length == 0) {
             return;
         }
+        
         if(actionArray.length != undoCount) {
             undoButton.classList.add('active');
         };
@@ -482,7 +485,8 @@
         historyDesc = clone.querySelector('.desc');
         historyImage = clone.querySelector('.img');
 
-        historyStack.addEventListener('click', () => {            
+        historyStack.addEventListener('click', () => {
+            undoCount = actionArray.length - index - 1;           
             updateHistoryView(index);        
             undo(index);
         })        
@@ -492,13 +496,20 @@
     }
 
     function updateHistoryView(index) {
-
+        console.log(`index : ${index}`);
         // HISTORY LIST
+        var currentIndex = index;
         var list = document.querySelectorAll('.stack');            
         list.forEach( stack => {
             stack.classList.remove('active');
             stack.classList.remove('pending');
         });
+        if(index == -1) {
+            list.forEach( stack => {
+                stack.classList.add('pending');
+            });
+            return;
+        }
         list[index].classList.add('active');
         for(var i = index + 1; i < actionArray.length; i++) {
             list[i].classList.add('pending');
