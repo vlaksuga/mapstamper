@@ -44,6 +44,15 @@
     
 
     // EVENT HANDLERS
+    document.addEventListener('keydown', function(event){
+        if(event.ctrlKey && event.key === 'z') {
+            undo();
+        }
+        if(event.ctrlKey && event.key === 'y') {
+            redo();
+        }
+    });
+
     document.getElementById('controlStampSize').addEventListener('change', function() {
         currentStampSize = this.value;
         document.getElementById("showStampSize").innerHTML = this.value;
@@ -123,7 +132,7 @@
 
     // AUTO DRAW
     function autoDraw(length) {
-        ctx.clearRect(0, 0, canvas.x, canvas.y);
+        createCanvas();
         var rangedArray = getActiveRange(length);
         var sceneArray = sortAction(rangedArray);
         for (var i = 0; i < length; i++) {
@@ -176,8 +185,7 @@
         if(undoCount >= actionArray.length) {
             console.log('Nothing to undo');
             return;
-        }        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);   
+        }           
         if(index != null) {
             autoDraw(index + 1);
             undoCount = actionArray.length - index - 1;            
@@ -195,8 +203,7 @@
         if(undoCount == 0) {
             console.log('Nothing to redo');
             return;
-        }
-        createCanvas();
+        }   
         autoDraw(actionArray.length - undoCount + 1);
         undoCount--;
         updateUndoButtons();
@@ -381,11 +388,12 @@
 
     // STAMP SYMBOL
     function stampSymbol(evt) {
+        
+        let currentPosition = getMousePos(evt);
+        let stempSize = getStempSize();
         if(isDragMode) {
             lastSymbolPosition = currentPosition;
         };
-        let currentPosition = getMousePos(evt);
-        let stempSize = getStempSize();
         let action = { act: ctx.drawImage, px: currentPosition.x, py: currentPosition.y, sx: stempSize.x, sy: stempSize.y, src:currentSymbol.src }
         store(action);
         autoDraw(actionArray.length);
@@ -490,15 +498,12 @@
             updateHistoryView(index);        
             undo(index);
         })        
-        historyDesc.innerHTML = `STAMP ADDED, X: ${action.px + action.sx}, Y : ${action.py + action.sy}`;                
+        historyDesc.innerHTML = `STAMP ADDED, X : ${action.px + action.sx}, Y : ${action.py + action.sy}`;                
         historyImage.src = action.src;
         return clone;
     }
 
     function updateHistoryView(index) {
-        console.log(`index : ${index}`);
-        // HISTORY LIST
-        var currentIndex = index;
         var list = document.querySelectorAll('.stack');            
         list.forEach( stack => {
             stack.classList.remove('active');

@@ -48,7 +48,7 @@ div#sidebar { position: fixed; top: var(--header-height-dim); left: 0px; width: 
 div#sidebar > div { margin-bottom: 10px; }
 div#canvasContainer { position: relative; overflow: auto; width: calc(100% - 500px); height: 800px; margin-left: 300px;}
 div#history { position: fixed; top: var(--header-height-dim); right: 0px; width: 300px; height: calc(100vh - var(--header-height-dim)); }
-div#asset { position: fixed; bottom: 12px; width: calc(100vw - 40px); left: 12px; }
+div#asset { position: fixed; bottom: 0px; width: 100vw; left: 0px; z-index: 11; background-color: black;}
 div#asset ul { display: flex; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; } 
 div#asset ul li img { width: 80px; height: 80px; border: 1px solid white ; margin-right: 8px; border-radius: var(--box-radius-dim); display: block;}
 .toolbox { color: black; padding: 12px; background-color: white; z-index: 10; overflow: auto; box-shadow: 10px 5px 5px var(--shadow-color);   -ms-overflow-style: none;  scrollbar-width: none; }
