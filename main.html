@@ -95,16 +95,28 @@
         </main>
 
         <div id="history" class="toolbox">
-            <div class="titleBox">
-                <h5>History</h5>
-                <div class="toolsButtons">
-                    <span id="undoButton" class="material-icons">undo</span>
-                    <span id="redoButton" class="material-icons">redo</span>
-                </div>    
+            <div class="wrap">
+                <div class="titleBox">
+                    <div class="title">
+                        <h5>History</h5>
+                        <span id="historyCloseButton" class="material-icons">close</span>
+                    </div>
+                    <div class="toolsButtons">
+                        <span id="undoButton" class="material-icons">undo</span>
+                        <span id="redoButton" class="material-icons">redo</span>
+                    </div>    
+                </div>
+    
+                <ul id="historyBoard">
+                    <!-- history here -->
+                </ul>
             </div>
-            <ul id="historyBoard">
-                <!-- history here -->
-            </ul>
+
+        <div id="historyNavButton">
+            <span id="historyNav" class="material-icons">arrow_back_ios</span>
+        </div>
+            
+
             <button id="clearHistory" style="display: none;">CLEAR</button>
         </div>
 

@@ -103,6 +103,16 @@
         redo();
     });
 
+    document.getElementById('historyCloseButton').addEventListener('click', function() {
+        document.getElementById('history').style.right = "-324px";
+        document.getElementById('historyNavButton').style.display = 'block';
+    })
+
+    document.getElementById('historyNavButton').addEventListener('click', function(){
+        document.getElementById('history').style.right = "0px";
+        this.style.display = 'none';
+    })
+
     document.getElementById('saveToImage').addEventListener('click', function() {
         downloadCanvas(this, 'canvas', 'map.png');
     }, false);
