@@ -56,6 +56,8 @@
         }
     });
 
+    document.getElementById('fileInput').addEventListener('change', load, false);
+
     document.getElementById('controlStampSize').addEventListener('change', function() {
         currentStampSize = this.value;
         document.getElementById("showStampSize").innerHTML = this.value;
@@ -75,6 +77,7 @@
         createOverlayCanvas();
         redraw();
     });
+    
 
     document.getElementById('sizeY').addEventListener('change', function(){
         document.getElementById("showCanvasYSize").innerHTML = this.value;
@@ -122,9 +125,9 @@
 
     
 
-    document.getElementById('saveToImage').addEventListener('click', function() {
-        downloadCanvas(this, 'canvas', 'map.png');
-    }, false);
+    // document.getElementById('saveToImage').addEventListener('click', function() {
+    //     downloadCanvas(this, 'canvas', 'map.png');
+    // }, false);
 
     document.getElementById('clearHistory').addEventListener('click', function() {
         clearHistoryBoard();
@@ -140,7 +143,9 @@
     // document.getElementById('eraser').addEventListener('click', eraser);
     // document.getElementById('clear').addEventListener('click', createCanvas);
     document.getElementById('save').addEventListener('click', save);
-    document.getElementById('load').addEventListener('click', load);
+    document.getElementById('load').addEventListener('click', function(){
+        document.getElementById('fileInput').click();
+    });
     document.getElementById('clearCache').addEventListener('click', function() {
         localStorage.removeItem("savedCanvas");
         actionArray = [];
@@ -154,10 +159,8 @@
         var sceneArray = sortAction(rangedArray);
         for (var i = 0; i < length; i++) {
             let scene = sceneArray[i];
-            if(scene.act == ctx.drawImage) {
-                let symbol = new Image();
-                symbol.src = scene.src;
-                ctx.drawImage(symbol, scene.px, scene.py, scene.sx, scene.sy);
+            if(scene.actType == "drawStamp") {
+                ctx.drawImage(document.getElementById(scene.aid), scene.px, scene.py, scene.sx, scene.sy);
             }
         }
     }
@@ -194,6 +197,7 @@
     // SET CURRENT SYMBOL
     function setCurrentSymbol(symbol) {
         currentSymbol.src = symbol.target.src;
+        currentSymbol.dataset.aid = symbol.target.id;
     }
 
     // UNDO
@@ -231,7 +235,7 @@
     ocanvas.addEventListener('mousedown', event => { mousedown(event); });
     ocanvas.addEventListener('mousemove', event => { mousemove(event); });    
     ocanvas.addEventListener('mouseleave', () => { mouseleave(); });
-    ocanvas.addEventListener('mouseup', mouseup);    
+    document.addEventListener('mouseup', mouseup);    
 
     // CREATE BACKGROUND CANVAS
     function createBackgroundCanvas() {        
@@ -304,23 +308,33 @@
     }
 
     // SAVE FUNCTION
-    // function save() {
-    //     localStorage.removeItem("savedCanvas");
-    //     localStorage.setItem("savedCanvas", JSON.stringify(actionArray));
-    //     console.log("Saved canvas!");
-    // }
+    function save() {    
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(actionArray)], {type: "text/plain; charset=utf-8"}));        
+        a.setAttribute("download", "data.json");
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
 
     // LOAD FUNCTION
-    // function load() {
-    //     if (localStorage.getItem("savedCanvas") != null) {
-    //         actionArray = JSON.parse(localStorage.savedCanvas);
-    //         redraw();
-    //         console.log("Canvas loaded.");
-    //     }
-    //     else {
-    //         console.log("No canvas in memory!");
-    //     }
-    // }
+    function load(e) {
+        console.log('load invoke');
+        var file = e.target.files[0];
+        console.log(file);
+        if(!file) {            
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var contents = e.target.result;
+            actionArray = JSON.parse(contents);            
+            createCanvas();
+            redraw();
+            drawHistory(actionArray);
+        };
+        reader.readAsText(file);    
+    }
 
     // ERASER HANDLING
     // function eraser() {
@@ -411,7 +425,7 @@
         if(isDragMode) {
             lastSymbolPosition = currentPosition;
         };
-        let action = { act: ctx.drawImage, px: currentPosition.x, py: currentPosition.y, sx: stempSize.x, sy: stempSize.y, src:currentSymbol.src }
+        let action = { actType: "drawStamp", px: currentPosition.x, py: currentPosition.y, sx: stempSize.x, sy: stempSize.y, aid: currentSymbol.dataset.aid }
         store(action);
         autoDraw(actionArray.length);
     }
@@ -481,18 +495,21 @@
     // DRAW ASSET
     function drawAsset() {        
         let assetBoard = document.getElementById('assetBoard');        
+
         var httpRequest = new XMLHttpRequest();
         httpRequest.onreadystatechange = function() {
             if(httpRequest.readyState == XMLHttpRequest.DONE) {
                 if(httpRequest.status === 200) {
                     var data = JSON.parse(httpRequest.responseText);
                     var keys = Object.keys(data);
-                    for(i = 0; i < keys.length; i++) {
+                    for(i = 0; i < keys.length; i++) {                        
+                        assetBoard.appendChild(cloneAssetCategory(keys[i]));
                         let d1 = data[keys[i]];
-                        let d1Keys = Object.keys(d1);
+                        let d1Keys = Object.keys(d1);                        
                         for(ii=0; ii < d1Keys.length; ii++) {
+                            document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
                             d1[d1Keys[ii]].forEach( function(ele){
-                                assetBoard.appendChild(cloneAsset(ele.name));
+                                document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));
                             })
                         }
                     }                    
@@ -547,16 +564,42 @@
             undo(index);
         })        
         historyDesc.innerHTML = `STAMP ADDED, X : ${action.px + action.sx}, Y : ${action.py + action.sy}`;                
-        historyImage.src = action.src;
+        historyImage.src = document.getElementById(action.aid).src;
         return clone;
     }
 
+    // CLONE ASSET CATEGORY
+    function cloneAssetCategory(catName) {
+        let temp = document.getElementById("temp_asset_cat");
+        let clone = document.importNode(temp.content, true);
+        catTitle = clone.querySelector('h3');
+        catTitle.innerHTML = catName;
+        catContainer = clone.querySelector('div');
+        catContainer.id = `ac_${catName}`;        
+        return clone;
+    }
+
+
+    // CLONE ASSET GROUP
+    function cloneAssetGroup(keyName){
+        let temp = document.getElementById("temp_asset_group");
+        let clone = document.importNode(temp.content, true);
+        grouptitle = clone.querySelector('h5');
+        grouptitle.innerHTML = keyName;
+        groupList = clone.querySelector('ul');
+        groupList.id = `ag_${keyName}`;        
+        return clone;
+    }
+
+
     // CLONE ASSET
-    function cloneAsset(src){
+    function cloneAsset(ele){
         let temp = document.getElementById("temp_asset");
         let clone = document.importNode(temp.content, true);
+        let id =`asset_${ele.name.split('.')[0]}`;
         assetImage = clone.querySelector('img');
-        assetImage.src = `${baseImageRoot}${src}`;
+        assetImage.id = id;
+        assetImage.src = `${baseImageRoot}${ele.name}`;
         assetImage.addEventListener('click', event => {
             setCurrentSymbol(event);
             document.getElementById('asset').style.display = "none";

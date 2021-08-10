@@ -19,7 +19,9 @@
                 <h3>MAP STAMPER</h3>
             </div>
             <div class="controlBox">
-                <span id="saveToImage" class="material-icons active">save_alt</span>
+                <input type="file" name="fileLoader" id="fileInput" style="display: none;">
+                <span id="load" class="material-icons active">file_upload</span>
+                <span id="save" class="material-icons active">file_download</span>
             </div>       
         </header>
 
@@ -27,7 +29,7 @@
 
             <div class="currentSymbol">
                 <h5>Current Stamp</h5>
-                <img id="currentSymbol" src="https://d2a797flmdiqkv.cloudfront.net/love_love_01.png" alt="symbol" style="width: 120px; height: auto;">
+                <img id="currentSymbol" src="https://d2a797flmdiqkv.cloudfront.net/love_love_01.png" alt="symbol" style="width: 120px; height: auto;" data-aid="asset_love_love_01">
             </div>
 
             <div class="stampSize">
@@ -121,19 +123,33 @@
         </div>
 
         <div id="asset" style="display: none;">
-            <div class="titleBox">
-                <span class="title">ASSET</span>
-                <span id="assetCloseButton" class="material-icons">close</span>
-            </div>
-            <ul id="assetBoard">
-                <!-- asset here -->              
-            </ul>            
+            <div class="wrap">
+                <div class="titleBox">
+                    <span class="title">ASSET</span>
+                    <span id="assetCloseButton" class="material-icons">close</span>
+                </div>
+                <div id="assetBoard">
+                    <!-- asset here -->              
+                </div>        
+            </div>    
         </div>
 
         <template id="temp_asset">
             <li>
                 <img>
             </li>
+        </template>
+
+        <template id="temp_asset_group">
+            <h5 class="assetGroupTitle"></h5>
+            <ul class="assetGroupList">
+
+            </ul>
+        </template>
+
+        <template id="temp_asset_cat">
+            <h3 class="assetCatTitle"></h3>
+            <div class="assetCatContainer"></div>
         </template>
 
         <template id="temp_history">
