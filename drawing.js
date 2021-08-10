@@ -1,7 +1,8 @@
 	// SETTING ALL VARIABLES
 
     const stempSizeSuppressor = 25;
-
+    const baseURL = "http://3.36.74.100:9999/asset/"
+    const baseImageRoot = "https://d2a797flmdiqkv.cloudfront.net/"
     
     var isMouseDown = false;
     var isDragMode = false;
@@ -37,10 +38,12 @@
 
 
     // INIT
+    drawAsset()
     createBackgroundCanvas();
     createForegroundCanvas();    
     createCanvas();
     createOverlayCanvas();
+    
     
 
     // EVENT HANDLERS
@@ -108,10 +111,16 @@
         document.getElementById('historyNavButton').style.display = 'block';
     })
 
+    document.getElementById('assetCloseButton').addEventListener('click', function() {
+        document.getElementById('asset').style.display = "none";        
+    })
+
     document.getElementById('historyNavButton').addEventListener('click', function(){
         document.getElementById('history').style.right = "0px";
         this.style.display = 'none';
     })
+
+    
 
     document.getElementById('saveToImage').addEventListener('click', function() {
         downloadCanvas(this, 'canvas', 'map.png');
@@ -124,10 +133,8 @@
         console.log("History Cleared!");
     });
 
-    symbols.forEach( symbol => {
-        symbol.addEventListener('click', function(){
-            setCurrentSymbol(this);
-        })
+    currentSymbol.addEventListener('click', function(){
+        document.getElementById('asset').style.display = 'block';
     })
 
     // document.getElementById('eraser').addEventListener('click', eraser);
@@ -186,7 +193,7 @@
 
     // SET CURRENT SYMBOL
     function setCurrentSymbol(symbol) {
-        currentSymbol.src = symbol.src;
+        currentSymbol.src = symbol.target.src;
     }
 
     // UNDO
@@ -471,6 +478,37 @@
         updateHistoryView(actionArray.length - 1);
     }
 
+    // DRAW ASSET
+    function drawAsset() {        
+        let assetBoard = document.getElementById('assetBoard');        
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function() {
+            if(httpRequest.readyState == XMLHttpRequest.DONE) {
+                if(httpRequest.status === 200) {
+                    var data = JSON.parse(httpRequest.responseText);
+                    var keys = Object.keys(data);
+                    for(i = 0; i < keys.length; i++) {
+                        let d1 = data[keys[i]];
+                        let d1Keys = Object.keys(d1);
+                        for(ii=0; ii < d1Keys.length; ii++) {
+                            d1[d1Keys[ii]].forEach( function(ele){
+                                assetBoard.appendChild(cloneAsset(ele.name));
+                            })
+                        }
+                    }                    
+                } else {
+                    // TODO : ERROR
+                    console.log('somethings wrong');
+                }                
+            } else {          
+                // REQUEST FAIL      
+                console.log('request fail');
+            }
+        };
+        httpRequest.open('GET', baseURL, true);
+        httpRequest.send();
+    }
+
     // UPDATE UNDO & REDO BUTTONS
     function updateUndoButtons(){
         undoButton.classList.remove('active');
@@ -513,6 +551,20 @@
         return clone;
     }
 
+    // CLONE ASSET
+    function cloneAsset(src){
+        let temp = document.getElementById("temp_asset");
+        let clone = document.importNode(temp.content, true);
+        assetImage = clone.querySelector('img');
+        assetImage.src = `${baseImageRoot}${src}`;
+        assetImage.addEventListener('click', event => {
+            setCurrentSymbol(event);
+            document.getElementById('asset').style.display = "none";
+        })        
+        return clone;
+    }
+
+    // UPDATE HISTORY VIEW    
     function updateHistoryView(index) {
         var list = document.querySelectorAll('.stack');            
         list.forEach( stack => {

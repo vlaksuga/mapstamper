@@ -56,9 +56,11 @@ div#history .wrap .titleBox .title { display: flex; flex-direction: row; justify
 div#historyNavButton { position: fixed; top: var(--header-height-dim); right: 0; background-color: brown; width: 30px; height: 30px;  z-index: 11; display: flex; justify-content: center; align-items: center; display: none;}
 
 ul#historyBoard { position: absolute; overflow-y: auto; top: 50px; left: 0; width: 100%; height: 700px;}
-div#asset { position: fixed; bottom: 0px; width: 100vw; left: 0px; z-index: 11; background-color: black;}
-div#asset ul { display: flex; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; } 
-div#asset ul li img { width: 80px; height: 80px; border: 1px solid white ; margin-right: 8px; border-radius: var(--box-radius-dim); display: block;}
+div#asset { position: fixed; width: 100vw; top: var(--header-height-dim); height: calc(100vh - var(--header-height-dim)); left: 0px; z-index: 11; background-color: hsla(0, 0%, 100%, 100%); overflow-y: auto;}
+div#asset .titleBox { width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; color: black; }
+div#asset .titleBox span { padding: 16px; font-weight: 700;}
+div#asset ul { display: flex; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; padding: 16px; gap: 10px;} 
+div#asset ul li img { width: 80px; height: 80px; border: 1px solid lightgray ; border-radius: var(--box-radius-dim); display: block; padding: 8px;}
 .toolbox { color: black; padding: 12px; background-color: white; z-index: 10; box-shadow: 10px 5px 5px var(--shadow-color);   -ms-overflow-style: none;  scrollbar-width: none; }
 .toolbox::-webkit-scrollbar {display: none;}
 input[type='range'] { width: 100% };
