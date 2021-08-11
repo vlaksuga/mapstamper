@@ -59,7 +59,8 @@ ul#historyBoard { position: absolute; overflow-y: auto; top: 50px; left: 0; widt
 div#asset { position: fixed; width: 100vw; top: var(--header-height-dim); height: calc(100vh - var(--header-height-dim)); left: 0px; z-index: 11; background-color: hsla(0, 0%, 100%, 100%); }
 div#asset .wrap { position: absolute; width: 100%; height: 100%; }
 div#asset .titleBox { position: absolute; width: 100%; height: 50px; top: 0; left: 0; display: flex; flex-direction: row; justify-content: space-between; align-items: center; color: black; background-color: white;}
-div#asset .titleBox span { padding: 16px; font-weight: 700;}
+div#asset .titleBox span { padding: 16px; font-weight: 700; }
+div#asset .titleBox span:first-child { text-transform: uppercase;}
 div#assetBoard { margin-top: 50px; height: calc(100vh - var(--header-height-dim) - 50px); overflow-y: auto; }
 div#assetBoard .assetCatTitle { padding: 8px 16px;}
 div#assetBoard .assetGroupTitle { padding: 8px 16px;}

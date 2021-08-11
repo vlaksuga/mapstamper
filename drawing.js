@@ -1,49 +1,52 @@
 	// SETTING ALL VARIABLES
 
-    const stempSizeSuppressor = 25;
-    const baseURL = "http://3.36.74.100:9999/asset/"
-    const baseImageRoot = "https://d2a797flmdiqkv.cloudfront.net/"
+    const SUPPRESS_VALUE = 25
+    const BASE_API_URL = "http://3.36.74.100:9999/"
+    const ASSET_PATH = "asset/"
+    const BASE_IMAGE_ROOT = "https://d2a797flmdiqkv.cloudfront.net/"
     
-    var isMouseDown = false;
-    var isDragMode = false;
-    var isFuzzMode = false;
-    var isRandomStamp = false;
-    var isBackgroundMode = false;
+    var isMouseDown = false
+    var isDragMode = false
+    var isFuzzMode = false
+    var isRandomStamp = false
+    var isBackgroundMode = false
 
-    var canvas = document.createElement('canvas');
-    var gcanvas = document.createElement('canvas');
-    var bgcanvas = document.createElement('canvas');
-    var ocanvas = document.createElement('canvas');
-    var container = document.getElementById('canvasContainer');
-    var historyBoard = document.getElementById('historyBoard');
-    var foregroundImage = document.getElementById('foreImage');
-    var backgroundImage = document.getElementById('backImage');
-    var undoButton = document.getElementById('undoButton');
-    var redoButton = document.getElementById('redoButton');
-    var symbols = document.querySelectorAll('#asset ul li img');
-    var ctx = canvas.getContext('2d');
-    var gctx = gcanvas.getContext('2d');
-    var bgctx = bgcanvas.getContext('2d');
-    var octx = ocanvas.getContext('2d');
-    var actionArray = [];
-    var undoCount = 0;
-    var currentStampSize = 25;
-    var currentDragDistance = 25;
-    var currentFuzziness = 1;
-    var currentSymbol = document.getElementById('currentSymbol');
-    var currentCanvasSizeX = parseInt(document.getElementById("sizeX").value);
-    var currentCanvasSizeY = parseInt(document.getElementById("sizeX").value);
-    var lastSymbolPosition = { x: 0, y: 0 };
+    var assetData
+    var canvas = document.createElement('canvas')
+    var gcanvas = document.createElement('canvas')
+    var bgcanvas = document.createElement('canvas')
+    var ocanvas = document.createElement('canvas')
+    var container = document.getElementById('canvasContainer')
+    var historyBoard = document.getElementById('historyBoard')
+    var currentForeImage = document.getElementById('foreImage')
+    var currentBackImage = document.getElementById('backImage')
+    var undoButton = document.getElementById('undoButton')
+    var redoButton = document.getElementById('redoButton')
+    var symbols = document.querySelectorAll('#asset ul li img')
+    var ctx = canvas.getContext('2d')
+    var gctx = gcanvas.getContext('2d')
+    var bgctx = bgcanvas.getContext('2d')
+    var octx = ocanvas.getContext('2d')
+    var actionArray = []
+    var pathArray = []
+    var undoCount = 0
+    var currentStampSize = 25
+    var currentDragDistance = 25
+    var currentFuzziness = 1
+    var currentSymbol = document.getElementById('currentSymbol')
+    var currentAssetTarget = currentSymbol
+    var currentCanvasSizeX = parseInt(document.getElementById("sizeX").value)
+    var currentCanvasSizeY = parseInt(document.getElementById("sizeX").value)
+    var lastSymbolPosition = { x: 0, y: 0 }
 
 
 
     // INIT
-    drawAsset()
+    getAssets()
     createBackgroundCanvas();
     createForegroundCanvas();    
     createCanvas();
-    createOverlayCanvas();
-    
+    createOverlayCanvas();    
     
 
     // EVENT HANDLERS
@@ -136,8 +139,17 @@
         console.log("History Cleared!");
     });
 
-    currentSymbol.addEventListener('click', function(){
-        document.getElementById('asset').style.display = 'block';
+    currentSymbol.addEventListener('click', function(event) {
+        currentAssetTarget = currentSymbol
+        showAssetPanel(event, 'stamp');
+    })
+
+    currentForeImage.addEventListener('click', function(event) {
+        showAssetPanel(event, 'texture');
+    })
+
+    currentBackImage.addEventListener('click', function(event) {
+        showAssetPanel(event, 'texture');
     })
 
     // document.getElementById('eraser').addEventListener('click', eraser);
@@ -151,6 +163,22 @@
         actionArray = [];
         console.log("Cache cleared!");
     });    
+
+    // SHOW ASSET PANEL
+    function showAssetPanel(event, t) {
+        currentAssetTarget = event.target
+        console.log(currentAssetTarget)
+        var view = document.getElementById('asset')
+        view.querySelector('.title').innerHTML = t
+        cats = view.querySelectorAll('.assetCatContainer')
+        cats.forEach( cat => {
+            cat.style.display = 'none';
+            if(cat.dataset.atype == t) {
+                cat.style.display = 'block';
+            }
+        })
+        view.style.display = 'block'
+    }
 
     // AUTO DRAW
     function autoDraw(length) {
@@ -196,8 +224,12 @@
 
     // SET CURRENT SYMBOL
     function setCurrentSymbol(symbol) {
-        currentSymbol.src = symbol.target.src;
-        currentSymbol.dataset.aid = symbol.target.id;
+        currentAssetTarget.src = symbol.target.src;
+        currentAssetTarget.dataset.aid = symbol.target.id;
+        if(currentAssetTarget.id != "currentSymbol") {
+            createBackgroundCanvas()
+            createForegroundCanvas()            
+        }
     }
 
     // UNDO
@@ -247,7 +279,7 @@
         bgcanvas.style.top = 0;
         bgcanvas.style.left = 0;
         var img = new Image();
-        img.src = backgroundImage.src;
+        img.src = currentBackImage.src;
         img.onload = function() {
              bgctx.drawImage(img, 0, 0);
              container.appendChild(bgcanvas);
@@ -255,8 +287,7 @@
     }
 
     // CREATE FOREGROUND CANVAS
-    function createForegroundCanvas() {
-        // GROUND CANVAS        
+    function createForegroundCanvas() { 
         gcanvas.id = "gcanvas";
         gcanvas.width = currentCanvasSizeX;
         gcanvas.height = currentCanvasSizeY;
@@ -265,10 +296,10 @@
         gcanvas.style.top = 0;
         gcanvas.style.left = 0;
         var img = new Image();
-        img.src = foregroundImage.src;
+        img.src = currentForeImage.src;
         img.onload = function() {
-             gctx.drawImage(img, 0, 0);
              container.appendChild(gcanvas);
+             clipBackgroundPath()
         };       
     }
 
@@ -362,7 +393,7 @@
     }
 
     // ON MOUSE MOVE
-    function mousemove(evt) {        
+    function mousemove(evt) {
         if(isMouseDown){
             let currentPosition = getMousePos(evt);
             if(isBackgroundMode) {
@@ -379,42 +410,45 @@
     }
 
     function stampBackground(evt) {
-        let currentPosition = getMousePos(evt);
-        let stempSize = getStempSize();
-        var w = 800;
-        var ida = gctx.getImageData(0,0,w,800);
+        createForegroundCanvas()
+        var path = getCurrentPath(evt) 
+        pathArray.push(path)             
+        clipBackgroundPath()
+    }
 
-        /*
-              *
-             ***
-            *****
-             ***
-              *
-
-        */
-       var ssssss = [[false,false,true,false,false],
-                     [false,true,true,true,false],
-                     [true,true,true,true,true],
-                     [false,true,true,true,false],
-                     [false,false,true,false,false]];     
-
-
-       
-
-        for(var i = 0;i<5;i++){
-            for(var ii = 0;ii<5;ii++){
-                var a18 = (((i+currentPosition.y)*w)+currentPosition.x+ii)*4;
-
-                if(ssssss[i][ii]){
-                    ida.data[a18+3] = 0;
-                }
-
-                
+    // CLIP BACKGROUND PATH
+    function clipBackgroundPath(index) {
+        if(pathArray.length != 0) {
+            var initPath = pathArray[0]
+            for(i=1; i < pathArray.length; i++){
+                initPath.addPath(pathArray[i])
             }
+            gctx.clip(initPath, "nonzero")
+            gctx.drawImage(currentForeImage, 0, 0)
         }
+    }
 
-        gctx.putImageData(ida,0,0);
+    // GET CURRENT PATH
+    function getCurrentPath(evt) {
+        var currentPath = new Path2D()
+        let pos = { x: evt.offsetX, y: evt.offsetY }
+        var angles = 10
+        var size = currentStampSize
+        var startInfo = { x: pos.x + size * Math.sin(0), y: pos.y + size * Math.cos(0)}
+        currentPath.moveTo(startInfo.x, startInfo.y)
+        for(i = 1; i <= angles; i++) {            
+            var px = pos.x + currentStampSize * getRandomInt(1, 4) * Math.sin(i * 2 * Math.PI / angles)
+            var py = pos.y + currentStampSize * getRandomInt(1, 4) * Math.cos(i * 2 * Math.PI / angles)
+            var posInfo = {x: px, y: py}
+            currentPath.lineTo(posInfo.x, posInfo.y)
+        }
+        currentPath.closePath()
+        return currentPath
+    }
 
+    // GET RANDOM
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 
     // STAMP SYMBOL
@@ -440,7 +474,12 @@
         let currentPosition = getMousePos(evt);
         let stempSize = getStempSize();
         octx.clearRect(0, 0, currentCanvasSizeX, currentCanvasSizeY);
-        octx.drawImage(currentSymbol, currentPosition.x, currentPosition.y, stempSize.x, stempSize.y);
+        if(isBackgroundMode) {
+            var path = getCurrentPath(evt)
+            octx.stroke(path)
+        } else {
+            octx.drawImage(currentSymbol, currentPosition.x, currentPosition.y, stempSize.x, stempSize.y);     
+        }                       
     }
 
 
@@ -458,8 +497,8 @@
             fuzzInt = 1;
         }
         return {
-            x:currentSymbol.width*(currentStampSize/stempSizeSuppressor)*fuzzInt,
-            y:currentSymbol.height*(currentStampSize/stempSizeSuppressor)*fuzzInt             
+            x:currentSymbol.width*(currentStampSize/SUPPRESS_VALUE)*fuzzInt,
+            y:currentSymbol.height*(currentStampSize/SUPPRESS_VALUE)*fuzzInt             
         }
     }
 
@@ -492,19 +531,21 @@
         updateHistoryView(actionArray.length - 1);
     }
 
-    // DRAW ASSET
-    function drawAsset() {        
-        let assetBoard = document.getElementById('assetBoard');        
+    // LOAD ASSET
+    function getAssets() {
 
+        let assetBoard = document.getElementById('assetBoard');        
         var httpRequest = new XMLHttpRequest();
+
         httpRequest.onreadystatechange = function() {
             if(httpRequest.readyState == XMLHttpRequest.DONE) {
                 if(httpRequest.status === 200) {
-                    var data = JSON.parse(httpRequest.responseText);
-                    var keys = Object.keys(data);
+                    console.log('request success')
+                    assetData = JSON.parse(httpRequest.responseText);
+                    var keys = Object.keys(assetData);
                     for(i = 0; i < keys.length; i++) {                        
                         assetBoard.appendChild(cloneAssetCategory(keys[i]));
-                        let d1 = data[keys[i]];
+                        let d1 = assetData[keys[i]];
                         let d1Keys = Object.keys(d1);                        
                         for(ii=0; ii < d1Keys.length; ii++) {
                             document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
@@ -512,6 +553,7 @@
                                 document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));
                             })
                         }
+
                     }                    
                 } else {
                     // TODO : ERROR
@@ -522,7 +564,8 @@
                 console.log('request fail');
             }
         };
-        httpRequest.open('GET', baseURL, true);
+
+        httpRequest.open('GET', BASE_API_URL + ASSET_PATH, true);
         httpRequest.send();
     }
 
@@ -563,7 +606,7 @@
             updateHistoryView(index);        
             undo(index);
         })        
-        historyDesc.innerHTML = `STAMP ADDED, X : ${action.px + action.sx}, Y : ${action.py + action.sy}`;                
+        historyDesc.innerHTML = "STAMP ADDED";                
         historyImage.src = document.getElementById(action.aid).src;
         return clone;
     }
@@ -575,7 +618,12 @@
         catTitle = clone.querySelector('h3');
         catTitle.innerHTML = catName;
         catContainer = clone.querySelector('div');
-        catContainer.id = `ac_${catName}`;        
+        catContainer.id = `ac_${catName}`;
+        if(catName == "Texture") {
+            catContainer.dataset.atype = 'texture';
+        } else {
+            catContainer.dataset.atype = 'stamp';
+        }        
         return clone;
     }
 
@@ -591,7 +639,6 @@
         return clone;
     }
 
-
     // CLONE ASSET
     function cloneAsset(ele){
         let temp = document.getElementById("temp_asset");
@@ -599,7 +646,7 @@
         let id =`asset_${ele.name.split('.')[0]}`;
         assetImage = clone.querySelector('img');
         assetImage.id = id;
-        assetImage.src = `${baseImageRoot}${ele.name}`;
+        assetImage.src = `${BASE_IMAGE_ROOT}${ele.name}`;
         assetImage.addEventListener('click', event => {
             setCurrentSymbol(event);
             document.getElementById('asset').style.display = "none";

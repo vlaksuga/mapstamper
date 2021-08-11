@@ -39,13 +39,13 @@
 
             <div class="canvasPattern">
                 <div class="foregroundPattern">
-                    <h5>Background</h5>
-                    <img id="foreImage" src="./asset/img/texture_Icesnow_04.png" alt="foreground">
+                    <h5>Foreground</h5>                    
+                    <img id="foreImage" src="./asset/img/texture_Land_02.png" data-aid="texture_Land_02" alt="background">
                 </div>
     
                 <div class="backgroundPattern">
-                    <h5>Foreground</h5>
-                    <img id="backImage" src="./asset/img/texture_Land_02.png" alt="background">
+                    <h5>Background</h5>
+                    <img id="backImage" src="./asset/img/texture_Icesnow_04.png" data-aid="texture_Icesnow_04" alt="foreground">                    
                 </div>
             </div>
     
@@ -72,12 +72,12 @@
             <div class="canvasSize">
                 <h5>Canvas</h5>
                 <div class="input-group">
-                    <span class="input-group-addon">X (<span id="showCanvasXSize">600</span>) </span>
-                    <input type="range" min=300 max="2000" id="sizeX" placeholder="sizeX" value="600" class="size">
+                    <span class="input-group-addon">X (<span id="showCanvasXSize">1200</span>) </span>
+                    <input type="range" min=300 max="2000" id="sizeX" placeholder="sizeX" value="1200" class="size">
                 </div>
                 <div class="input-group">
-                    <span class="input-group-addon">Y (<span id="showCanvasYSize">600</span>) </span>
-                    <input type="range" min=300 max="2000" id="sizeY" placeholder="sizeY" value="600" class="size">
+                    <span class="input-group-addon">Y (<span id="showCanvasYSize">800</span>) </span>
+                    <input type="range" min=300 max="2000" id="sizeY" placeholder="sizeY" value="800" class="size">
                 </div>                    
             </div>
 
@@ -148,16 +148,19 @@
         </template>
 
         <template id="temp_asset_cat">
-            <h3 class="assetCatTitle"></h3>
-            <div class="assetCatContainer"></div>
+            <div class="assetCatContainer">
+                <h3 class="assetCatTitle"></h3>
+            </div>
         </template>
 
         <template id="temp_history">
             <li class="stack">                    
-                    <span>
-                        <img class="img">
-                    </span>
-                    <span class="desc"></span>
+                <span>
+                    <img class="img">
+                </span>
+                <span class="desc">
+
+                </span>
             </li>
         </template>
 
