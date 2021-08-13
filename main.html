@@ -29,81 +29,85 @@
 
         <!-- SIDE BAR --> 
         <div id="sidebar" class="toolbox">
-
-            <div class="currentSymbol">
-                <h5>Stamp</h5>
-                <div class="currentImageBox">
-                    <img id="currentSymbol" src="https://d2a797flmdiqkv.cloudfront.net/love_love_01.png" alt="symbol" style="width: 120px; height: auto;" data-aid="asset_love_love_01">
-                </div>
-                
-            </div>
-
-            <div class="randomStamp check">
-                <input type="checkbox" name="isRandomStamp" id="isRandomStamp">	
-                <h5>Random Stamp</h5>                
-            </div>
-
-            <div class="stampSize">
-                <h5>Stamp Size (<span id="showStampSize">25</span>)</h5>
-                <input type="range" min="1" max="100" value="25" step="1" id="controlStampSize">
-            </div>
-
-
-            <div class="canvasPattern">
-                <div class="foregroundPattern">
-                    <h5>Foreground</h5>                    
-                    <img id="foreImage" src="https://d2a797flmdiqkv.cloudfront.net/texture_Land_02.png" data-aid="texture_Land_02" alt="background">
+            
+            <h4>Stamp</h4>
+            <section class="stamp">
+                <div class="currentSymbol">
+                    <div class="currentImageBox">
+                        <img id="currentSymbol" src="https://d2a797flmdiqkv.cloudfront.net/love_love_01.png" alt="symbol" style="width: 120px; height: auto;" data-aid="asset_love_love_01">
+                    </div>
+                    
                 </div>
     
-                <div class="backgroundPattern">
-                    <h5>Background</h5>
-                    <img id="backImage" src="https://d2a797flmdiqkv.cloudfront.net/texture_Icesnow_04.png" data-aid="texture_Icesnow_04" alt="foreground">                    
+                <div class="randomStamp check">
+                    <input type="checkbox" name="isRandomStamp" id="isRandomStamp">	
+                    <h5>Random Stamp</h5>                
                 </div>
-            </div>
     
-            <div class="fuzziness check" style="display: none;">            
-                <input type="checkbox" name="isFuzz" id="isFuzziness">	
-                <h5>Fuzziness</h5>                         		
-            </div>
-
-            <div class="dragMode check">
-                <input type="checkbox" name="isDrag" id="isDragMode">
-                <h5>Drag Mode</h5>                	
-            </div>
-
-            <div class="backMode check">            
-                <input type="checkbox" name="isBack" id="isBackMode">
-                <h5>Texture Mode</h5>
-            </div>
-
-            <div class="vertex">
-                <h5>Vertices (<span id="showVertices">5</span>)</h5>
-                <input type="range" min="3" max="12" value="5" step="1" id="controlVertices">
-            </div>
-
-            <div class="stampSize">
-                <h5>Drag Distance (<span id="showDragDistance">25</span>)</h5>
-                <input type="range" min="25" max="200" value="25" step="1" id="controlDragDistance">
-            </div>
-    
-            <div class="canvasSize">
-                <h5>Canvas</h5>
-                <div class="input-group">
-                    <h5>X (<span id="showCanvasXSize">1200</span>) </h5>
-                    <input type="range" min=300 max="2000" id="sizeX" placeholder="sizeX" value="1200" class="size">
+                <div class="stampSize">
+                    <h5>Size (<span id="showStampSize">25</span>)</h5>
+                    <input type="range" min="1" max="100" value="25" step="1" id="controlStampSize">
                 </div>
-                <div class="input-group">
-                    <h5 class="input-group-addon">Y (<span id="showCanvasYSize">800</span>)</h5>
-                    <input type="range" min=300 max="2000" id="sizeY" placeholder="sizeY" value="800" class="size">
-                </div>                    
-            </div>
+            </section>
 
-            <div class="Storage" style="display: none;">
-                <h5>Storage</h5>
-                <input type="button" value="Save" class="btn btn-warning" id="save">
-                <input type="button" value="Load" class="btn btn-warning" id="load">
-                <input type="button" value="Clear" class="btn btn-warning" id="clearCache">
-            </div>
+            <section class="texture">
+                <h4>Texture</h4>
+                <div class="backMode check">            
+                    <input type="checkbox" name="isBack" id="isBackMode">
+                    <h5>Texture Mode</h5>
+                </div>
+
+                <div class="canvasPattern">
+                    <div class="wrap">
+                        <div class="foregroundPattern">
+                            <h5>Foreground</h5>                    
+                            <img id="foreImage" src="https://d2a797flmdiqkv.cloudfront.net/texture_Land_02.png" data-aid="texture_Land_02" alt="background">
+                        </div>
+            
+                        <div class="backgroundPattern">
+                            <h5>Background</h5>
+                            <img id="backImage" src="https://d2a797flmdiqkv.cloudfront.net/texture_Icesnow_04.png" data-aid="texture_Icesnow_04" alt="foreground">                    
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vertex">
+                    <h5>Vertices (<span id="showVertices">5</span>)</h5>
+                    <input type="range" min="3" max="12" value="5" step="1" id="controlVertices">
+                </div>
+            </section>
+
+            <section class="tool">
+                <h4>Tools</h4>
+                <div class="fuzziness check" style="display: none;">            
+                    <input type="checkbox" name="isFuzz" id="isFuzziness">	
+                    <h5>Fuzziness</h5>                         		
+                </div>
+    
+                <div class="dragMode check">
+                    <input type="checkbox" name="isDrag" id="isDragMode">
+                    <h5>Drag Mode</h5>                	
+                </div>            
+    
+                <div class="dragDistance">
+                    <h5>Drag Distance (<span id="showDragDistance">25</span>)</h5>
+                    <input type="range" min="25" max="200" value="25" step="1" id="controlDragDistance">
+                </div>
+            </section>
+
+            <section class="canvasInfo">
+                <h4>Canvas</h4>
+                <div class="canvasSize">
+                    <div class="input-group">
+                        <h5>X (<span id="showCanvasXSize">1200</span>) </h5>
+                        <input type="range" min=300 max="2000" id="sizeX" placeholder="sizeX" value="1200" class="size">
+                    </div>
+                    <div class="input-group">
+                        <h5 class="input-group-addon">Y (<span id="showCanvasYSize">800</span>)</h5>
+                        <input type="range" min=300 max="2000" id="sizeY" placeholder="sizeY" value="800" class="size">
+                    </div>                    
+                </div>
+            </section>
 
         </div>    
 

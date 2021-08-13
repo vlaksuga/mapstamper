@@ -187,33 +187,28 @@
         console.log("History Cleared!");
     });
 
-    currentSymbol.addEventListener('click', function(event) {
+    currentSymbol.addEventListener('click', function() {
         currentAssetTarget = currentSymbol
-        showAssetPanel(event, 'stamp');
+        showAssetPanel('stamp')
     })
 
-    currentForeImage.addEventListener('click', function(event) {
-        showAssetPanel(event, 'texture');
+    currentForeImage.addEventListener('click', function() {
+        currentAssetTarget = currentForeImage
+        showAssetPanel('texture')
     })
 
-    currentBackImage.addEventListener('click', function(event) {
-        showAssetPanel(event, 'texture');
+    currentBackImage.addEventListener('click', function() {
+        currentAssetTarget = currentBackImage
+        showAssetPanel('texture')
     })
 
     document.getElementById('save').addEventListener('click', save);
     document.getElementById('load').addEventListener('click', function(){
         document.getElementById('fileInput').click();
     });
-    document.getElementById('clearCache').addEventListener('click', function() {
-        localStorage.removeItem("savedCanvas");
-        actionArray = [];
-        console.log("Cache cleared!");
-    });    
 
     // SHOW ASSET PANEL
-    function showAssetPanel(event, t) {
-        currentAssetTarget = event.target
-        console.log(currentAssetTarget)
+    function showAssetPanel(t) {
         var view = document.getElementById('asset')
         view.querySelector('.title').innerHTML = t
         cats = view.querySelectorAll('.assetCatContainer')
@@ -282,7 +277,10 @@
     // SET CURRENT SYMBOL
     function setCurrentSymbol(symbol) {
         var parent = symbol.target.parentNode.parentNode
-        currentGrupId = parent.id
+        if(parent.parentNode.dataset.atype != "texture") {
+            currentGrupId = parent.id
+        }
+        console.log(currentGrupId)
         currentAssetTarget.src = symbol.target.src
         currentAssetTarget.dataset.aid = symbol.target.id
         if(currentAssetTarget.id == "foreImage") {
@@ -568,7 +566,9 @@
         let action = { actType: "drawStamp", px: currentPosition.x, py: currentPosition.y, sx: stempSize.x, sy: stempSize.y, aid: currentSymbol.dataset.aid }
         storeAction(action);
         autoDraw(actionArray.length);
-        if(isRandomStamp && !isBackgroundMode) { changeCurrentStamp(currentGrupId) }
+        if(isRandomStamp) {   
+            changeCurrentStamp(currentGrupId)
+        }
     }
 
     function stampTexture(evt) {

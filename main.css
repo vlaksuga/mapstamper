@@ -85,7 +85,7 @@ canvas#canvas.active { opacity: 0.3; }
   background-position: 0 0, 10px 10px;
  }
 .check { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 12px}
-.canvasPattern { display: flex; flex-direction: row; width: 100%; justify-content: space-between; gap: 12px;}
+.canvasPattern .wrap { display: flex; flex-direction: row; width: 100%; justify-content: space-between; gap: 12px;}
 .canvasPattern img { border-radius: var(--box-radius-dim);}
 .colorpicker { background: transparent; height: 40px; }
 
