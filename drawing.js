@@ -1,7 +1,7 @@
 	// SETTING ALL VARIABLES
 
     const SUPPRESS_VALUE = 25
-    const BASE_API_URL = "http://3.36.74.100:9999/"
+    const BASE_API_URL = "http://baul-dev.com/"
     const ASSET_PATH = "asset/"
     const BASE_IMAGE_ROOT = "https://d2a797flmdiqkv.cloudfront.net/"
     
@@ -14,29 +14,44 @@
     var assetData
     var canvas = document.createElement('canvas')
     var gcanvas = document.createElement('canvas')
+    var gscanvas = document.createElement('canvas')
     var bgcanvas = document.createElement('canvas')
     var ocanvas = document.createElement('canvas')
+    var rcanvas = document.createElement('canvas')
     var container = document.getElementById('canvasContainer')
     var historyBoard = document.getElementById('historyBoard')
+    var textureHistoryBoard = document.getElementById('textureHistoryBoard')
     var currentForeImage = document.getElementById('foreImage')
     var currentBackImage = document.getElementById('backImage')
+
+    // BUTTONS
     var undoButton = document.getElementById('undoButton')
     var redoButton = document.getElementById('redoButton')
+    var symbolHistoryButton = document.getElementById('symbolHistory')
+    var textureHistoryButton = document.getElementById('textureHistory')
     var symbols = document.querySelectorAll('#asset ul li img')
     var ctx = canvas.getContext('2d')
     var gctx = gcanvas.getContext('2d')
+    var gsctx = gscanvas.getContext('2d')
     var bgctx = bgcanvas.getContext('2d')
     var octx = ocanvas.getContext('2d')
+    var rctx = ocanvas.getContext('2d')
     var actionArray = []
     var pathArray = []
-    var undoCount = 0
+    var pathRawArray = []
+    var symbolUndoCount = 0
+    var textureUndoCount = 0
+    
     var currentStampSize = 25
     var currentDragDistance = 25
+    var currentVertices = 5
     var currentFuzziness = 1
+
     var currentSymbol = document.getElementById('currentSymbol')
+    var currentGrupId = "ag_love"
     var currentAssetTarget = currentSymbol
     var currentCanvasSizeX = parseInt(document.getElementById("sizeX").value)
-    var currentCanvasSizeY = parseInt(document.getElementById("sizeX").value)
+    var currentCanvasSizeY = parseInt(document.getElementById("sizeY").value)
     var lastSymbolPosition = { x: 0, y: 0 }
 
 
@@ -46,16 +61,16 @@
     createBackgroundCanvas();
     createForegroundCanvas();    
     createCanvas();
-    createOverlayCanvas();    
+    createOverlayCanvas();
     
 
     // EVENT HANDLERS
     document.addEventListener('keydown', function(event){
         if(event.ctrlKey && event.key === 'z') {
-            undo();
+            undoButton.click()
         }
         if(event.ctrlKey && event.key === 'y') {
-            redo();
+            redoButton.click()
         }
     });
 
@@ -71,6 +86,11 @@
         document.getElementById("showDragDistance").innerHTML = this.value;
     });
 
+    document.getElementById('controlVertices').addEventListener('change', function() {
+        currentVertices = this.value;
+        document.getElementById("showVertices").innerHTML = this.value;
+    });
+
     document.getElementById('sizeX').addEventListener('change', function(){
         document.getElementById("showCanvasXSize").innerHTML = this.value;
         currentCanvasSizeX = this.value;
@@ -83,6 +103,7 @@
     
 
     document.getElementById('sizeY').addEventListener('change', function(){
+        console.log(`sizeY : ${this.value}`)
         document.getElementById("showCanvasYSize").innerHTML = this.value;
         currentCanvasSizeY = this.value;
         createBackgroundCanvas();
@@ -90,6 +111,10 @@
         createCanvas();
         createOverlayCanvas();
         redraw();
+    });
+
+    document.getElementById('isRandomStamp').addEventListener('change', function() {
+        isRandomStamp = this.checked;
     });
 
     document.getElementById('isFuzziness').addEventListener('change', function() {
@@ -101,16 +126,39 @@
     });
 
     document.getElementById('isBackMode').addEventListener('change', function() {
-        isBackgroundMode = this.checked;
-    });
-
+        isBackgroundMode = this.checked
+        if(isBackgroundMode) {
+            canvas.classList.add('active')
+            textureHistoryButton.click()
+        } else {
+            canvas.classList.remove('active')
+            symbolHistoryButton.click()
+        }        
+    })
+    
     undoButton.addEventListener('click', function() {
-        undo();
-    });
+        if(document.querySelector('.historyTabButton.active').dataset.btn == 1) {
+            undo()
+        } else {
+            undoTexture()
+        }        
+    })
 
     redoButton.addEventListener('click', function() {
-        redo();
-    });
+        if(document.querySelector('.historyTabButton.active').dataset.btn == 1) {
+            redo()
+        } else {
+            redoTexture()
+        }        
+    })
+
+    symbolHistoryButton.addEventListener('click', function(){
+        selectHistoryType(this.id)      
+    })
+
+    textureHistoryButton.addEventListener('click', function(){
+        selectHistoryType(this.id)
+    })
 
     document.getElementById('historyCloseButton').addEventListener('click', function() {
         document.getElementById('history').style.right = "-324px";
@@ -128,14 +176,14 @@
 
     
 
-    // document.getElementById('saveToImage').addEventListener('click', function() {
-    //     downloadCanvas(this, 'canvas', 'map.png');
-    // }, false);
+    document.getElementById('saveToImage').addEventListener('click', function() {
+         downloadCanvas();
+    }, false);
 
     document.getElementById('clearHistory').addEventListener('click', function() {
         clearHistoryBoard();
         actionArray = [];
-        undoCount = 0;
+        symbolUndoCount = 0;
         console.log("History Cleared!");
     });
 
@@ -152,8 +200,6 @@
         showAssetPanel(event, 'texture');
     })
 
-    // document.getElementById('eraser').addEventListener('click', eraser);
-    // document.getElementById('clear').addEventListener('click', createCanvas);
     document.getElementById('save').addEventListener('click', save);
     document.getElementById('load').addEventListener('click', function(){
         document.getElementById('fileInput').click();
@@ -182,29 +228,39 @@
 
     // AUTO DRAW
     function autoDraw(length) {
-        createCanvas();
-        var rangedArray = getActiveRange(length);
-        var sceneArray = sortAction(rangedArray);
-        for (var i = 0; i < length; i++) {
-            let scene = sceneArray[i];
-            if(scene.actType == "drawStamp") {
-                ctx.drawImage(document.getElementById(scene.aid), scene.px, scene.py, scene.sx, scene.sy);
-            }
-        }
+        createCanvas()
+        var rangedArray = getActiveRange(length, actionArray)
+        var sceneArray = sortAction(rangedArray)
+        sceneArray.forEach( scene => {
+            ctx.drawImage(document.getElementById(scene.aid), scene.px, scene.py, scene.sx, scene.sy)
+        })
+    }
+
+    // AUTO DRAW
+    function autoDrawTexture(length) {
+        createForegroundCanvas()
+        var rangedArray = getActiveRange(length, pathArray)
+        var path = new Path2D()
+        console.log(rangedArray)
+        rangedArray.forEach( scene => {
+            path.addPath(scene)
+        })
+        gctx.clip(path, "nonzero")
+        gctx.drawImage(currentForeImage, 0, 0) 
     }
 
     // GET ACTIVE RANGE
-    function getActiveRange(length) {
+    function getActiveRange(length, array) {
         var range = [];
         for (var i=0; i < length; i++) {
-            range.push(actionArray[i]);
+            range.push(array[i]);
         }
         return range;
     }
 
     // SORT ARRAY BY POSITION Y
     function sortAction(array) {
-        var arr = array;
+        var arr = array              
         arr.sort(function (a, b) {
             if(a.py + a.sy > b.py + b.sy) {
                 return 1;
@@ -214,54 +270,88 @@
             }
             return 0;
         })
-        return arr;
+        return arr
     }
 
     // REDRAW
     function redraw() {
         autoDraw(actionArray.length);
+        autoDrawTexture(pathArray.length);
     }
 
     // SET CURRENT SYMBOL
     function setCurrentSymbol(symbol) {
-        currentAssetTarget.src = symbol.target.src;
-        currentAssetTarget.dataset.aid = symbol.target.id;
-        if(currentAssetTarget.id != "currentSymbol") {
+        var parent = symbol.target.parentNode.parentNode
+        currentGrupId = parent.id
+        currentAssetTarget.src = symbol.target.src
+        currentAssetTarget.dataset.aid = symbol.target.id
+        if(currentAssetTarget.id == "foreImage") {
+            autoDrawTexture(pathArray.length)      
+        }
+        if(currentAssetTarget.id == "backImage") {
             createBackgroundCanvas()
-            createForegroundCanvas()            
         }
     }
 
     // UNDO
     function undo(index) {
-        console.log(`undostart : ${actionArray.length}`)
-        if(undoCount >= actionArray.length) {
+        if(symbolUndoCount >= actionArray.length) {
             console.log('Nothing to undo');
             return;
         }           
         if(index != null) {
             autoDraw(index + 1);
-            undoCount = actionArray.length - index - 1;            
+            symbolUndoCount = actionArray.length - index - 1;            
         } else {
-            autoDraw(actionArray.length- (undoCount + 1))
-            undoCount++;        
+            autoDraw(actionArray.length- (symbolUndoCount + 1))
+            symbolUndoCount++;        
         }                
-        updateUndoButtons();
-        updateHistoryView(actionArray.length - undoCount - 1);
+        updateUndoButtons(actionArray, historyBoard);
+        updateHistoryView(actionArray.length - symbolUndoCount - 1, historyBoard);
+    }
+
+    // UNDO
+    function undoTexture(index) {
+        if(textureUndoCount >= pathArray.length) {
+            console.log('Nothing to undo');
+            return;
+        }           
+        if(index != null) {        
+            autoDrawTexture(index + 1);
+            textureUndoCount = pathArray.length - index - 1;            
+        } else {
+            autoDrawTexture(pathArray.length - (textureUndoCount + 1))
+            textureUndoCount++;        
+        }                
+        updateUndoButtons(pathArray, textureHistoryBoard);
+        updateHistoryView(pathArray.length - textureUndoCount - 1, textureHistoryBoard);
     }
 
     // REDO
     function redo() {
-        console.log(`redo undocnt ${undoCount}`);
-        if(undoCount == 0) {
+        console.log(`redo undocnt ${symbolUndoCount}`);
+        if(symbolUndoCount == 0) {
             console.log('Nothing to redo');
             return;
         }   
-        autoDraw(actionArray.length - undoCount + 1);
-        undoCount--;
-        updateUndoButtons();
-        updateHistoryView(actionArray.length - undoCount - 1);
-    }    
+        autoDraw(actionArray.length - symbolUndoCount + 1);
+        symbolUndoCount--;
+        updateUndoButtons(actionArray, historyBoard);
+        updateHistoryView(actionArray.length - symbolUndoCount - 1, historyBoard);
+    }
+    
+    // REDO
+    function redoTexture() {
+        console.log(`redo undocnt ${textureUndoCount}`);
+        if(textureUndoCount == 0) {
+            console.log('Nothing to redo');
+            return;
+        }   
+        autoDrawTexture(pathArray.length - textureUndoCount + 1);
+        textureUndoCount--;
+        updateUndoButtons(pathArray, textureHistoryBoard);
+        updateHistoryView(pathArray.length - textureUndoCount - 1, textureHistoryBoard);
+    }
 
     // CANVAS EVENT HANDLERS
     ocanvas.addEventListener('mousedown', event => { mousedown(event); });
@@ -297,19 +387,15 @@
         gcanvas.style.left = 0;
         var img = new Image();
         img.src = currentForeImage.src;
-        img.onload = function() {
-             container.appendChild(gcanvas);
-             clipBackgroundPath()
-        };       
-    }
+        container.appendChild(gcanvas);
+    }   
 
     // CREATE CANVAS
     function createCanvas() {
-        // CANVAS        
         canvas.id = "canvas";
         canvas.width = currentCanvasSizeX;
         canvas.height = currentCanvasSizeY;
-        canvas.style.zIndex = 8;
+        canvas.style.zIndex = 9;
         canvas.style.position = "absolute";
         canvas.style.top = 0;
         canvas.style.left = 0;
@@ -323,7 +409,7 @@
         ocanvas.id="ocanvas";
         ocanvas.width = currentCanvasSizeX;
         ocanvas.height = currentCanvasSizeY;
-        ocanvas.style.zIndex = 9;
+        ocanvas.style.zIndex = 10;
         ocanvas.style.position = "absolute";
         ocanvas.style.top = 0;
         ocanvas.style.left = 0;
@@ -332,20 +418,39 @@
         container.appendChild(ocanvas);
     }
 
+    // CREATE CANVAS
+    function createResultCanvas() {
+        rcanvas.id = "rcanvas";
+        rcanvas.width = currentCanvasSizeX;
+        rcanvas.height = currentCanvasSizeY;
+        rcanvas.style.zIndex = 12;
+        rcanvas.style.position = "absolute";
+        rcanvas.style.top = 0;
+        rcanvas.style.left = 0;
+        rctx.clearRect(0, 0, rcanvas.width, rcanvas.height);   
+        container.appendChild(rcanvas);        
+    }     
+
     // DOWNLOAD CANVAS
-    function downloadCanvas(link, canvas, filename) {
-        link.href = document.getElementById(canvas).toDataURL();
-        link.download = filename;
+    function downloadCanvas() {
+        createResultCanvas()
+        var canvasImage = canvas.toDataURL()
+        console.log(canvasImage)
+        rctx.drawImage(canvasImage, rcanvas.width, rcanvas.height);
     }
 
     // SAVE FUNCTION
     function save() {    
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob([JSON.stringify(actionArray)], {type: "text/plain; charset=utf-8"}));        
-        a.setAttribute("download", "data.json");
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const a = document.createElement("a")                
+        let canvas = { atype: "canvas", w: document.getElementById('sizeX').value, h: document.getElementById('sizeY').value }
+        let symbols = { atype : "symbol",  contents : actionArray } 
+        let paths = { atype : "path",  contents : pathRawArray } 
+        var obj = { canvas : canvas, symbols: symbols, paths: paths }
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(obj)], {type: "text/plain; charset=utf-8"}))
+        a.setAttribute("download", "data.json")
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
     }
 
     // LOAD FUNCTION
@@ -358,11 +463,36 @@
         }
         var reader = new FileReader();
         reader.onload = function(e) {
-            var contents = e.target.result;
-            actionArray = JSON.parse(contents);            
-            createCanvas();
-            redraw();
-            drawHistory(actionArray);
+            var obj = JSON.parse(e.target.result)            
+            var symbols = obj.symbols
+            var paths = obj.paths
+
+            actionArray = symbols.contents
+            pathRawArray = paths.contents    
+            console.log(pathRawArray)        
+            var path = []
+            for(i=0; i < pathRawArray.length; i++) {                
+                var currentPath = new Path2D()        
+                var startPos = { x: pathRawArray[i].sp.x, y: pathRawArray[i].sp.y }
+                currentPath.moveTo(startPos.x, startPos.y)
+                for(ii = 0; ii < pathRawArray[i].mp.length; ii++) {                    
+                    var insPos = { x: pathRawArray[i].mp[ii].x, y: pathRawArray[i].mp[ii].y }
+                    currentPath.lineTo(insPos.x, insPos.y)
+                }                           
+                currentPath.closePath()             
+                path.push(currentPath)   
+            } 
+            pathArray = path            
+            console.log(pathArray)
+            createBackgroundCanvas()
+            createForegroundCanvas()
+            createCanvas()
+            createOverlayCanvas()
+            redraw()
+            drawHistory(actionArray, historyBoard);
+            drawHistory(pathArray, textureHistoryBoard);
+            symbolUndoCount = 0
+            textureUndoCount = 0
         };
         reader.readAsText(file);    
     }
@@ -386,7 +516,7 @@
     function mousedown(evt) {        
         isMouseDown = true
         if(isBackgroundMode) {
-            stampBackground(evt);
+            stampTexture(evt);
             return;
         }
         stampSymbol(evt);
@@ -396,72 +526,64 @@
     function mousemove(evt) {
         if(isMouseDown){
             let currentPosition = getMousePos(evt);
-            if(isBackgroundMode) {
-                stampBackground(evt);
-            } else {
-                if(isDragMode) {
+            if(isDragMode) {
+                if(isBackgroundMode) {
+                    stampTexture(evt);
+                } else {
                     if(Math.abs(lastSymbolPosition.x - currentPosition.x) > currentDragDistance || Math.abs(lastSymbolPosition.y - currentPosition.y) > currentDragDistance) {
                         stampSymbol(evt);                                
                     }                
-                }            
+                }                
             }            
         }     
         overlayBrush(evt);
     }
 
-    function stampBackground(evt) {
-        createForegroundCanvas()
-        var path = getCurrentPath(evt) 
-        pathArray.push(path)             
-        clipBackgroundPath()
-    }
-
-    // CLIP BACKGROUND PATH
-    function clipBackgroundPath(index) {
-        if(pathArray.length != 0) {
-            var initPath = pathArray[0]
-            for(i=1; i < pathArray.length; i++){
-                initPath.addPath(pathArray[i])
-            }
-            gctx.clip(initPath, "nonzero")
-            gctx.drawImage(currentForeImage, 0, 0)
-        }
-    }
-
     // GET CURRENT PATH
-    function getCurrentPath(evt) {
-        var currentPath = new Path2D()
-        let pos = { x: evt.offsetX, y: evt.offsetY }
-        var angles = 10
-        var size = currentStampSize
-        var startInfo = { x: pos.x + size * Math.sin(0), y: pos.y + size * Math.cos(0)}
-        currentPath.moveTo(startInfo.x, startInfo.y)
-        for(i = 1; i <= angles; i++) {            
-            var px = pos.x + currentStampSize * getRandomInt(1, 4) * Math.sin(i * 2 * Math.PI / angles)
-            var py = pos.y + currentStampSize * getRandomInt(1, 4) * Math.cos(i * 2 * Math.PI / angles)
-            var posInfo = {x: px, y: py}
-            currentPath.lineTo(posInfo.x, posInfo.y)
-        }
+    function getCurrentPath(x, y, p) {
+        var currentPath = new Path2D()        
+        var points = p
+        var size = currentStampSize        
+        var startPos = { x: x + size * Math.sin(0), y: y + size * Math.cos(0) }
+        var movePos = []
+        currentPath.moveTo(startPos.x, startPos.y)
+        for(i = 1; i <= points; i++) {
+            var insPos = {x: x + size * Math.sin(i * 2 * Math.PI / points), y: y + size * Math.cos(i * 2 * Math.PI / points)}
+            currentPath.lineTo(insPos.x, insPos.y)
+            movePos.push(insPos)
+        }                
         currentPath.closePath()
-        return currentPath
+        return { path: currentPath, raw: { sp: startPos, mp: movePos } }
     }
 
-    // GET RANDOM
-    function getRandomInt(min, max) {
-        return Math.floor(Math.random() * (max - min)) + min;
-    }
+
 
     // STAMP SYMBOL
-    function stampSymbol(evt) {
-        
+    function stampSymbol(evt) {        
         let currentPosition = getMousePos(evt);
         let stempSize = getStempSize();
         if(isDragMode) {
             lastSymbolPosition = currentPosition;
         };
         let action = { actType: "drawStamp", px: currentPosition.x, py: currentPosition.y, sx: stempSize.x, sy: stempSize.y, aid: currentSymbol.dataset.aid }
-        store(action);
+        storeAction(action);
         autoDraw(actionArray.length);
+        if(isRandomStamp && !isBackgroundMode) { changeCurrentStamp(currentGrupId) }
+    }
+
+    function stampTexture(evt) {
+        createForegroundCanvas()
+        var path = getCurrentPath(evt.offsetX, evt.offsetY, currentVertices)
+        storePath(path)
+        autoDrawTexture(pathArray.length)
+    }
+
+    function changeCurrentStamp(groupId) {
+        var group = document.getElementById(groupId)
+        var stamps = group.querySelectorAll('img')
+        var symbol = stamps[Math.floor(Math.random()*stamps.length)]
+        currentSymbol.src = symbol.src;
+        currentSymbol.dataset.aid = symbol.id;
     }
 
     // PRESERVE LAST POSITION
@@ -475,7 +597,7 @@
         let stempSize = getStempSize();
         octx.clearRect(0, 0, currentCanvasSizeX, currentCanvasSizeY);
         if(isBackgroundMode) {
-            var path = getCurrentPath(evt)
+            var path = getCurrentPath(evt.offsetX, evt.offsetY, currentVertices).path
             octx.stroke(path)
         } else {
             octx.drawImage(currentSymbol, currentPosition.x, currentPosition.y, stempSize.x, stempSize.y);     
@@ -508,107 +630,136 @@
     }
 
     // STORE ACTION
-    function store(action) {
-        if(undoCount != 0) {
+    function storeAction(action) {
+        if(symbolUndoCount != 0) {
             var tempArray = [];
-            for(var i = 0; i<actionArray.length - undoCount; i++) {
+            for(var i = 0; i < actionArray.length - symbolUndoCount; i++) {
                 tempArray.push(actionArray[i]);
             }            
                 actionArray = tempArray;
             };
         actionArray.push(action);
-        undoCount = 0;
-        drawHistory(actionArray);
+        symbolUndoCount = 0;
+        drawHistory(actionArray, historyBoard);                      
+    }
+
+    // STORE 
+    function storePath(obj) {
+        if(textureUndoCount != 0) {
+            var tempArray = []
+            for(var i = 0; i < pathArray.length - textureUndoCount; i++) {
+                tempArray.push(pathArray[i])
+            }            
+            pathArray = tempArray
+            }
+        pathArray.push(obj.path)
+        pathRawArray.push(obj.raw)
+        console.log(pathArray)
+        console.log(pathRawArray)
+        textureUndoCount = 0
+        drawHistory(pathArray, textureHistoryBoard)
     }
 
     // DRAW HISTORY
-    function drawHistory(actionArray) {
-        clearHistoryBoard();
-        actionArray.forEach( function(action, index) {
-            historyBoard.appendChild(cloneHistory(action, index));            
+    function drawHistory(array, board) {        
+        clearHistoryBoard(board);
+        array.forEach( function(action, index) {
+            board.appendChild(cloneHistory(action, index, board));            
         });
-        updateUndoButtons();
-        updateHistoryView(actionArray.length - 1);
+        updateUndoButtons(array, board);
+        updateHistoryView(array.length - 1, board);
     }
 
-    // LOAD ASSET
+    // GET ASSET
     function getAssets() {
-
         let assetBoard = document.getElementById('assetBoard');        
-        var httpRequest = new XMLHttpRequest();
-
-        httpRequest.onreadystatechange = function() {
-            if(httpRequest.readyState == XMLHttpRequest.DONE) {
-                if(httpRequest.status === 200) {
-                    console.log('request success')
-                    assetData = JSON.parse(httpRequest.responseText);
-                    var keys = Object.keys(assetData);
-                    for(i = 0; i < keys.length; i++) {                        
-                        assetBoard.appendChild(cloneAssetCategory(keys[i]));
-                        let d1 = assetData[keys[i]];
-                        let d1Keys = Object.keys(d1);                        
-                        for(ii=0; ii < d1Keys.length; ii++) {
-                            document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
-                            d1[d1Keys[ii]].forEach( function(ele){
-                                document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));
-                            })
-                        }
-
-                    }                    
-                } else {
-                    // TODO : ERROR
-                    console.log('somethings wrong');
-                }                
-            } else {          
-                // REQUEST FAIL      
-                console.log('request fail');
+        fetch(BASE_API_URL + ASSET_PATH).then(function(response){
+            console.log('fectch success')
+            return response.json()
+        }).then(function(data){
+            assetData = data
+            var keys = Object.keys(assetData);
+            for(i = 0; i < keys.length; i++) {                        
+                assetBoard.appendChild(cloneAssetCategory(keys[i]));
+                let d1 = assetData[keys[i]];
+                let d1Keys = Object.keys(d1);                        
+                for(ii=0; ii < d1Keys.length; ii++) {
+                    document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
+                    d1[d1Keys[ii]].forEach( function(ele){
+                        document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));
+                    })
+                }
             }
-        };
-
-        httpRequest.open('GET', BASE_API_URL + ASSET_PATH, true);
-        httpRequest.send();
+        }).catch(function(err){
+            console.warn('error!!', err)
+        })        
     }
 
     // UPDATE UNDO & REDO BUTTONS
-    function updateUndoButtons(){
+    function updateUndoButtons(array, board) {
         undoButton.classList.remove('active');
         redoButton.classList.remove('active');
-
-        if(actionArray.length == 0) {
-            return;
-        }
-        
-        if(actionArray.length != undoCount) {
-            undoButton.classList.add('active');
-        };
-        if(undoCount > 0) {
-            redoButton.classList.add('active');
-        }
+        if(board == historyBoard) {
+            if(array.length == 0 || array.length == undefined) {
+                return;
+            }            
+            if(array.length != symbolUndoCount) {
+                undoButton.classList.add('active');
+            };
+            if(symbolUndoCount > 0) {
+                redoButton.classList.add('active');
+            }            
+        } else {
+            if(array.length == 0 || array.length == undefined) {
+                return;
+            }
+            if(array.length != textureUndoCount) {
+                undoButton.classList.add('active');
+            }
+            if(textureUndoCount > 0) {
+                redoButton.classList.add('active');
+            }          
+        }        
     }
 
     // CLAER HISTORY BOARD
-    function clearHistoryBoard(){
+    function clearHistoryBoard(board){
+        while (board.hasChildNodes()) {
+            board.removeChild(board.firstChild);
+        }               
+    }
+
+    // CLAER TEXTURE HISTORY BOARD
+    function clearTextureHistoryBoard(){
         while (historyBoard.hasChildNodes()) {
             historyBoard.removeChild(historyBoard.firstChild);
         }        
     }
 
     // CLONE HISTORY
-    function cloneHistory(action, index){
-        let temp = document.getElementById("temp_history");
-        let clone = document.importNode(temp.content, true);
-        historyStack = clone.querySelector('.stack');
-        historyDesc = clone.querySelector('.desc');
-        historyImage = clone.querySelector('.img');
-
-        historyStack.addEventListener('click', () => {
-            undoCount = actionArray.length - index - 1;           
-            updateHistoryView(index);        
-            undo(index);
-        })        
-        historyDesc.innerHTML = "STAMP ADDED";                
-        historyImage.src = document.getElementById(action.aid).src;
-        return clone;
+    function cloneHistory(action, index, board) {
+        let temp = document.getElementById("temp_history")
+        let clone = document.importNode(temp.content, true)
+        historyStack = clone.querySelector('.stack')
+        historyDesc = clone.querySelector('.desc')
+        historyImage = clone.querySelector('.img')
+        
+        if(board == historyBoard) {
+            historyStack.addEventListener('click', () => {            
+                symbolUndoCount = actionArray.length - index - 1
+                updateHistoryView(index, board);        
+                undo(index);
+            })        
+            historyImage.src = document.getElementById(action.aid).src
+            historyDesc.innerHTML = "STAMP ADDED"
+        } else {
+            historyStack.addEventListener('click', () => {            
+                textureUndoCount = pathArray.length - index - 1
+                updateHistoryView(index, board);        
+                undoTexture(index);
+            })
+        }           
+        return clone
     }
 
     // CLONE ASSET CATEGORY
@@ -647,7 +798,7 @@
         assetImage = clone.querySelector('img');
         assetImage.id = id;
         assetImage.src = `${BASE_IMAGE_ROOT}${ele.name}`;
-        assetImage.addEventListener('click', event => {
+        assetImage.addEventListener('click', event => {            
             setCurrentSymbol(event);
             document.getElementById('asset').style.display = "none";
         })        
@@ -655,8 +806,14 @@
     }
 
     // UPDATE HISTORY VIEW    
-    function updateHistoryView(index) {
-        var list = document.querySelectorAll('.stack');            
+    function updateHistoryView(index, board) {
+        var array
+        if (board == historyBoard) {
+            array = actionArray
+        } else {
+            array = pathArray
+        }
+        var list = board.querySelectorAll('.stack');            
         list.forEach( stack => {
             stack.classList.remove('active');
             stack.classList.remove('pending');
@@ -668,9 +825,27 @@
             return;
         }
         list[index].classList.add('active');
-        for(var i = index + 1; i < actionArray.length; i++) {
+        for(var i = index + 1; i < array.length; i++) {
             list[i].classList.add('pending');
-        }        
+        }
     }
 
-
+    // SELECT HISTORY TYPE
+    function selectHistoryType(sid) {
+        var tabNum = document.getElementById(sid).dataset.btn
+        var selectedBoard
+        document.querySelectorAll('.historyTabButton').forEach( button => {
+            button.classList.remove('active');
+            if(button.id == sid) { button.classList.add('active') }
+        })
+        document.querySelectorAll('.historyBoard').forEach( board => {
+            board.style.display = "none"
+            if(board.dataset.tab == tabNum) {
+                 board.style.display = "block"
+                 selectedBoard = board
+            }
+        })
+        var array
+        if( tabNum == "1") { array = actionArray} else { array = pathArray}
+        updateUndoButtons(array, selectedBoard)
+    }

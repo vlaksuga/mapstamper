@@ -14,22 +14,33 @@
 
     <div id="app">
 
+        <!-- HEADER -->
         <header>
             <div class="title">
                 <h3>MAP STAMPER</h3>
             </div>
             <div class="controlBox">
                 <input type="file" name="fileLoader" id="fileInput" style="display: none;">
-                <span id="load" class="material-icons active">file_upload</span>
-                <span id="save" class="material-icons active">file_download</span>
+                <span id="saveToImage" class="material-icons active">save</span>
+                <span id="load" class="material-icons active">file_download</span>
+                <span id="save" class="material-icons active">file_upload</span>
             </div>       
         </header>
 
+        <!-- SIDE BAR --> 
         <div id="sidebar" class="toolbox">
 
             <div class="currentSymbol">
-                <h5>Current Stamp</h5>
-                <img id="currentSymbol" src="https://d2a797flmdiqkv.cloudfront.net/love_love_01.png" alt="symbol" style="width: 120px; height: auto;" data-aid="asset_love_love_01">
+                <h5>Stamp</h5>
+                <div class="currentImageBox">
+                    <img id="currentSymbol" src="https://d2a797flmdiqkv.cloudfront.net/love_love_01.png" alt="symbol" style="width: 120px; height: auto;" data-aid="asset_love_love_01">
+                </div>
+                
+            </div>
+
+            <div class="randomStamp check">
+                <input type="checkbox" name="isRandomStamp" id="isRandomStamp">	
+                <h5>Random Stamp</h5>                
             </div>
 
             <div class="stampSize">
@@ -37,19 +48,20 @@
                 <input type="range" min="1" max="100" value="25" step="1" id="controlStampSize">
             </div>
 
+
             <div class="canvasPattern">
                 <div class="foregroundPattern">
                     <h5>Foreground</h5>                    
-                    <img id="foreImage" src="./asset/img/texture_Land_02.png" data-aid="texture_Land_02" alt="background">
+                    <img id="foreImage" src="https://d2a797flmdiqkv.cloudfront.net/texture_Land_02.png" data-aid="texture_Land_02" alt="background">
                 </div>
     
                 <div class="backgroundPattern">
                     <h5>Background</h5>
-                    <img id="backImage" src="./asset/img/texture_Icesnow_04.png" data-aid="texture_Icesnow_04" alt="foreground">                    
+                    <img id="backImage" src="https://d2a797flmdiqkv.cloudfront.net/texture_Icesnow_04.png" data-aid="texture_Icesnow_04" alt="foreground">                    
                 </div>
             </div>
     
-            <div class="fuzziness check">            
+            <div class="fuzziness check" style="display: none;">            
                 <input type="checkbox" name="isFuzz" id="isFuzziness">	
                 <h5>Fuzziness</h5>                         		
             </div>
@@ -61,7 +73,12 @@
 
             <div class="backMode check">            
                 <input type="checkbox" name="isBack" id="isBackMode">
-                <h5>Background Mode</h5>
+                <h5>Texture Mode</h5>
+            </div>
+
+            <div class="vertex">
+                <h5>Vertices (<span id="showVertices">5</span>)</h5>
+                <input type="range" min="3" max="12" value="5" step="1" id="controlVertices">
             </div>
 
             <div class="stampSize">
@@ -72,11 +89,11 @@
             <div class="canvasSize">
                 <h5>Canvas</h5>
                 <div class="input-group">
-                    <span class="input-group-addon">X (<span id="showCanvasXSize">1200</span>) </span>
+                    <h5>X (<span id="showCanvasXSize">1200</span>) </h5>
                     <input type="range" min=300 max="2000" id="sizeX" placeholder="sizeX" value="1200" class="size">
                 </div>
                 <div class="input-group">
-                    <span class="input-group-addon">Y (<span id="showCanvasYSize">800</span>) </span>
+                    <h5 class="input-group-addon">Y (<span id="showCanvasYSize">800</span>)</h5>
                     <input type="range" min=300 max="2000" id="sizeY" placeholder="sizeY" value="800" class="size">
                 </div>                    
             </div>
@@ -90,17 +107,21 @@
 
         </div>    
 
+        <!-- MAIN -->
         <main>                            
             <div id="canvasContainer">
                 <!-- canvas here -->
             </div>
         </main>
 
+        <!-- HISTORY -->
         <div id="history" class="toolbox">
             <div class="wrap">
                 <div class="titleBox">
                     <div class="title">
                         <h5>History</h5>
+                        <span id="symbolHistory" class="historyTabButton active" data-btn="1" >Symbol</span>
+                        <span id="textureHistory" class="historyTabButton" data-btn="2" >Texture</span>
                         <span id="historyCloseButton" class="material-icons">close</span>
                     </div>
                     <div class="toolsButtons">
@@ -109,19 +130,23 @@
                     </div>    
                 </div>
     
-                <ul id="historyBoard">
+                <ul id="historyBoard" data-tab="1" class="historyBoard">
                     <!-- history here -->
+                </ul>
+                <ul id="textureHistoryBoard" class="historyBoard" style="display: none;" data-tab="2">
+
                 </ul>
             </div>
 
         <div id="historyNavButton">
-            <span id="historyNav" class="material-icons">arrow_back_ios</span>
+            <span id="historyNav">SHOW HISTORY</span>
         </div>
             
 
             <button id="clearHistory" style="display: none;">CLEAR</button>
         </div>
 
+        <!-- ASSET -->
         <div id="asset" style="display: none;">
             <div class="wrap">
                 <div class="titleBox">
@@ -134,6 +159,12 @@
             </div>    
         </div>
 
+        <!-- ALRET DIALOG -->
+        <div id="alretDialog">
+
+        </div>
+
+        <!-- TEMPLATES -->
         <template id="temp_asset">
             <li>
                 <img>
@@ -156,15 +187,11 @@
         <template id="temp_history">
             <li class="stack">                    
                 <span>
-                    <img class="img">
+                    <img class="img" src="images/wallpaper_black.svg">
                 </span>
-                <span class="desc">
-
-                </span>
+                <span class="desc">TEXTURE ADDED</span>
             </li>
-        </template>
-
-
+        </template>        
     </div>
 
     
