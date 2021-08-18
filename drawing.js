@@ -1,7 +1,7 @@
 	// SETTING ALL VARIABLES
 
     const SUPPRESS_VALUE = 25
-    const BASE_API_URL = "http://baul-dev.com/"
+    const BASE_API_URL = "https://baul-dev.com/"
     const ASSET_PATH = "asset/"
     const BASE_IMAGE_ROOT = "https://d2a797flmdiqkv.cloudfront.net/"
     
@@ -14,7 +14,6 @@
     var assetData
     var canvas = document.createElement('canvas')
     var gcanvas = document.createElement('canvas')
-    var gscanvas = document.createElement('canvas')
     var bgcanvas = document.createElement('canvas')
     var ocanvas = document.createElement('canvas')
     var rcanvas = document.createElement('canvas')
@@ -32,7 +31,6 @@
     var symbols = document.querySelectorAll('#asset ul li img')
     var ctx = canvas.getContext('2d')
     var gctx = gcanvas.getContext('2d')
-    var gsctx = gscanvas.getContext('2d')
     var bgctx = bgcanvas.getContext('2d')
     var octx = ocanvas.getContext('2d')
     var rctx = ocanvas.getContext('2d')
@@ -64,7 +62,6 @@
     createOverlayCanvas();
     
 
-    // EVENT HANDLERS
     document.addEventListener('keydown', function(event){
         if(event.ctrlKey && event.key === 'z') {
             undoButton.click()
@@ -86,10 +83,12 @@
         document.getElementById("showDragDistance").innerHTML = this.value;
     });
 
+
     document.getElementById('controlVertices').addEventListener('change', function() {
         currentVertices = this.value;
         document.getElementById("showVertices").innerHTML = this.value;
     });
+
 
     document.getElementById('sizeX').addEventListener('change', function(){
         document.getElementById("showCanvasXSize").innerHTML = this.value;
@@ -101,7 +100,6 @@
         redraw();
     });
     
-
     document.getElementById('sizeY').addEventListener('change', function(){
         console.log(`sizeY : ${this.value}`)
         document.getElementById("showCanvasYSize").innerHTML = this.value;
@@ -166,25 +164,25 @@
     })
 
     document.getElementById('assetCloseButton').addEventListener('click', function() {
-        document.getElementById('asset').style.display = "none";        
+        document.getElementById('asset').style.display = "none"
     })
 
     document.getElementById('historyNavButton').addEventListener('click', function(){
-        document.getElementById('history').style.right = "0px";
-        this.style.display = 'none';
+        document.getElementById('history').style.right = "0px"
+        this.style.display = 'none'
     })
 
     
 
     document.getElementById('saveToImage').addEventListener('click', function() {
-         downloadCanvas();
-    }, false);
+         downloadCanvas()
+    }, false)
 
     document.getElementById('clearHistory').addEventListener('click', function() {
-        clearHistoryBoard();
-        actionArray = [];
-        symbolUndoCount = 0;
-        console.log("History Cleared!");
+        clearHistoryBoard()
+        actionArray = []
+        symbolUndoCount = 0
+        console.log("History Cleared!")
     });
 
     currentSymbol.addEventListener('click', function() {
@@ -202,12 +200,12 @@
         showAssetPanel('texture')
     })
 
-    document.getElementById('save').addEventListener('click', save);
+    document.getElementById('save').addEventListener('click', save)
     document.getElementById('load').addEventListener('click', function(){
-        document.getElementById('fileInput').click();
-    });
+        document.getElementById('fileInput').click()
+    })
 
-    // SHOW ASSET PANEL
+
     function showAssetPanel(t) {
         var view = document.getElementById('asset')
         view.querySelector('.title').innerHTML = t
@@ -221,7 +219,7 @@
         view.style.display = 'block'
     }
 
-    // AUTO DRAW
+
     function autoDraw(length) {
         createCanvas()
         var rangedArray = getActiveRange(length, actionArray)
@@ -236,7 +234,6 @@
         createForegroundCanvas()
         var rangedArray = getActiveRange(length, pathArray)
         var path = new Path2D()
-        console.log(rangedArray)
         rangedArray.forEach( scene => {
             path.addPath(scene)
         })
@@ -311,31 +308,31 @@
     // UNDO
     function undoTexture(index) {
         if(textureUndoCount >= pathArray.length) {
-            console.log('Nothing to undo');
-            return;
+            console.log('Nothing to undo')
+            return
         }           
         if(index != null) {        
-            autoDrawTexture(index + 1);
-            textureUndoCount = pathArray.length - index - 1;            
+            autoDrawTexture(index + 1)
+            textureUndoCount = pathArray.length - index - 1
         } else {
             autoDrawTexture(pathArray.length - (textureUndoCount + 1))
-            textureUndoCount++;        
+            textureUndoCount++
         }                
-        updateUndoButtons(pathArray, textureHistoryBoard);
-        updateHistoryView(pathArray.length - textureUndoCount - 1, textureHistoryBoard);
+        updateUndoButtons(pathArray, textureHistoryBoard)
+        updateHistoryView(pathArray.length - textureUndoCount - 1, textureHistoryBoard)
     }
 
     // REDO
     function redo() {
         console.log(`redo undocnt ${symbolUndoCount}`);
         if(symbolUndoCount == 0) {
-            console.log('Nothing to redo');
-            return;
+            console.log('Nothing to redo')
+            return
         }   
-        autoDraw(actionArray.length - symbolUndoCount + 1);
-        symbolUndoCount--;
-        updateUndoButtons(actionArray, historyBoard);
-        updateHistoryView(actionArray.length - symbolUndoCount - 1, historyBoard);
+        autoDraw(actionArray.length - symbolUndoCount + 1)
+        symbolUndoCount--
+        updateUndoButtons(actionArray, historyBoard)
+        updateHistoryView(actionArray.length - symbolUndoCount - 1, historyBoard)
     }
     
     // REDO
@@ -416,7 +413,7 @@
         container.appendChild(ocanvas);
     }
 
-    // CREATE CANVAS
+    // CREATE RESULT CANVAS
     function createResultCanvas() {
         rcanvas.id = "rcanvas";
         rcanvas.width = currentCanvasSizeX;
@@ -429,21 +426,20 @@
         container.appendChild(rcanvas);        
     }     
 
-    // DOWNLOAD CANVAS
+    
     function downloadCanvas() {
-        createResultCanvas()
-        var canvasImage = canvas.toDataURL()
-        console.log(canvasImage)
-        rctx.drawImage(canvasImage, rcanvas.width, rcanvas.height);
+        createResultCanvas()        
+        const backgroundImage = bgcanvas.toDataURL()
+        console.log(backgroundImage)
+        // rctx.drawImage(canvasImage, rcanvas.width, rcanvas.height);
     }
 
-    // SAVE FUNCTION
     function save() {    
         const a = document.createElement("a")                
-        let canvas = { atype: "canvas", w: document.getElementById('sizeX').value, h: document.getElementById('sizeY').value }
-        let symbols = { atype : "symbol",  contents : actionArray } 
-        let paths = { atype : "path",  contents : pathRawArray } 
-        var obj = { canvas : canvas, symbols: symbols, paths: paths }
+        const settings = { atype: "setting", canvasWidth: currentCanvasSizeX, canvasHeight: currentCanvasSizeY, foreTexture: document.getElementById('foreImage').dataset.aid, backTexture: document.getElementById('backImage').dataset.aid }
+        const symbols = { atype : "symbol",  contents : actionArray } 
+        const paths = { atype : "path",  contents : pathRawArray } 
+        const obj = { settings: settings, symbols: symbols, paths: paths }
         a.href = URL.createObjectURL(new Blob([JSON.stringify(obj)], {type: "text/plain; charset=utf-8"}))
         a.setAttribute("download", "data.json")
         document.body.appendChild(a)
@@ -451,59 +447,68 @@
         document.body.removeChild(a)
     }
 
-    // LOAD FUNCTION
     function load(e) {
-        console.log('load invoke');
-        var file = e.target.files[0];
+        const file = e.target.files[0];
         console.log(file);
         if(!file) {            
             return;
         }
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = function(e) {
-            var obj = JSON.parse(e.target.result)            
-            var symbols = obj.symbols
-            var paths = obj.paths
+            const obj = JSON.parse(e.target.result)
+            const settings = obj.settings
+            const symbols = obj.symbols
+            const paths = obj.paths            
 
-            actionArray = symbols.contents
-            pathRawArray = paths.contents    
-            console.log(pathRawArray)        
-            var path = []
-            for(i=0; i < pathRawArray.length; i++) {                
-                var currentPath = new Path2D()        
-                var startPos = { x: pathRawArray[i].sp.x, y: pathRawArray[i].sp.y }
-                currentPath.moveTo(startPos.x, startPos.y)
-                for(ii = 0; ii < pathRawArray[i].mp.length; ii++) {                    
-                    var insPos = { x: pathRawArray[i].mp[ii].x, y: pathRawArray[i].mp[ii].y }
-                    currentPath.lineTo(insPos.x, insPos.y)
-                }                           
-                currentPath.closePath()             
-                path.push(currentPath)   
-            } 
-            pathArray = path            
-            console.log(pathArray)
-            createBackgroundCanvas()
-            createForegroundCanvas()
-            createCanvas()
-            createOverlayCanvas()
-            redraw()
-            drawHistory(actionArray, historyBoard);
-            drawHistory(pathArray, textureHistoryBoard);
-            symbolUndoCount = 0
-            textureUndoCount = 0
+            updateCurrentArrays(symbols, paths)
+            updateSettings(settings)            
+            reInit()
         };
         reader.readAsText(file);    
     }
 
-    // ERASER HANDLING
-    // function eraser() {
-    //     currentStampSize = 50;
-    //     currentColor = ctx.fillStyle
-    // }
+    function reInit() {
+        createBackgroundCanvas()
+        createForegroundCanvas()
+        createCanvas()
+        createOverlayCanvas()
+        redraw()
+        drawHistory(actionArray, historyBoard);
+        drawHistory(pathArray, textureHistoryBoard);
+        symbolUndoCount = 0
+        textureUndoCount = 0
+    }
+
+    
+    function updateCurrentArrays(action, raw) {
+        actionArray = action.contents
+        pathRawArray = raw.contents        
+        const newPath = []
+        for(i=0; i < pathRawArray.length; i++) {                                
+            const currentPath = new Path2D()        
+            const startPos = { x: pathRawArray[i].sp.x, y: pathRawArray[i].sp.y }
+            currentPath.moveTo(startPos.x, startPos.y)
+            for(ii = 0; ii < pathRawArray[i].mp.length; ii++) {                    
+                const insPos = { x: pathRawArray[i].mp[ii].x, y: pathRawArray[i].mp[ii].y }
+                currentPath.lineTo(insPos.x, insPos.y)
+            }                           
+            currentPath.closePath()             
+            newPath.push(currentPath)   
+        } 
+        pathArray = newPath
+    }
+
+    function updateSettings(settings) {
+        // TODO : RESTORE CANVAS SIZE
+        const foreImageSrc = document.getElementById(settings.foreTexture).src
+        const backImageSrc = document.getElementById(settings.backTexture).src
+        document.getElementById('foreImage').src = foreImageSrc
+        document.getElementById('backImage').src = backImageSrc
+    }
 
     // GET MOUSE POSITION
     function getMousePos(evt) {
-        var stempSize = getStempSize();
+        let stempSize = getStempSize();
         return {
             x: evt.offsetX - (stempSize.x / 2),
             y: evt.offsetY - (stempSize.y / 2)
@@ -553,6 +558,7 @@
         currentPath.closePath()
         return { path: currentPath, raw: { sp: startPos, mp: movePos } }
     }
+    
 
 
 
@@ -646,16 +652,19 @@
     // STORE 
     function storePath(obj) {
         if(textureUndoCount != 0) {
-            var tempArray = []
+            var tempPathArray = []
+            var tempRawArray = []
             for(var i = 0; i < pathArray.length - textureUndoCount; i++) {
-                tempArray.push(pathArray[i])
-            }            
-            pathArray = tempArray
+                tempPathArray.push(pathArray[i])
+            }                        
+            pathArray = tempPathArray
+            for(var i = 0; i < pathRawArray.length - textureUndoCount; i++) {
+                tempRawArray.push(pathRawArray[i])
+            }
+            pathRawArray = tempRawArray
             }
         pathArray.push(obj.path)
         pathRawArray.push(obj.raw)
-        console.log(pathArray)
-        console.log(pathRawArray)
         textureUndoCount = 0
         drawHistory(pathArray, textureHistoryBoard)
     }
@@ -684,6 +693,7 @@
                 let d1 = assetData[keys[i]];
                 let d1Keys = Object.keys(d1);                        
                 for(ii=0; ii < d1Keys.length; ii++) {
+                    // UI // DATA 분리
                     document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
                     d1[d1Keys[ii]].forEach( function(ele){
                         document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));

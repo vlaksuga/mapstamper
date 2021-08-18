@@ -47,8 +47,10 @@ main { display: flex; flex-direction: row; margin-top: calc(var(--header-height-
 
 div#sidebar { position: fixed; top: var(--header-height-dim); left: 0px; width: 250px; height: calc(100vh - var(--header-height-dim));}
 div#sidebar > div { margin-bottom: 10px; }
-div#canvasContainer { position: relative; overflow: auto; width: calc(100% - 500px); height: 800px; margin-left: 300px;}
-div#sidebar h5 {margin-bottom: 5px;}
+div#canvasContainer { position: relative; overflow: auto; width: calc(100% - 500px); height: calc(100vh - var(--header-height-dim)); margin-left: 300px;}
+div#sidebar h4 { margin-bottom: 8px; }
+div#sidebar h5 { margin-bottom: 5px; }
+div#sidebar section:not(:last-child) { border-bottom: 1px solid var(--main-bg-color); margin-bottom: 16px;}
 
 div#history { position: fixed; top: var(--header-height-dim); right: 0px; width: 250px; height: calc(100vh - var(--header-height-dim)); overflow-y: hidden; transition: ease-in-out 0.5s;}
 div#history .wrap { position: relative; width: 100%; height: 100%; }
