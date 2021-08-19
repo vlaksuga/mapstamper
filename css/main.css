@@ -38,9 +38,10 @@ ul  { list-style-type: none; }
 #app { width: 100vw; overflow: hidden;}
 
 header { width: inherit; height: var(--header-height-dim); background-color: var(--header-bg-color); position: fixed; top: 0; left: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; }
-header .title { width: 250px; height: inherit; display: flex; justify-content: flex-start; align-items: center; margin-left: 12px; }
+header .title { width: 250px; height: inherit; display: flex; justify-content: flex-start; align-items: center; margin-left: 24px; }
 header .title h3 { color: white; padding: 0; margin: 0; }
 header .controlBox { margin-right: 24px; display: flex; justify-content: end; flex-direction: row; }
+header .controlBox > span { margin-right: 12px;}
 
 
 main { display: flex; flex-direction: row; margin-top: calc(var(--header-height-dim) + 12px); }
@@ -61,6 +62,7 @@ div#history .wrap .titleBox .title .historyTabButton.active { color: var(--activ
 
 div#historyNavButton { position: fixed; top: var(--header-height-dim); right: 12px; width: fit-content; z-index: 11; display: none; font-size: 12px;}
 ul.historyBoard { position: absolute; overflow-y: auto; top: 50px; left: 0; width: 100%; height: 700px;}
+#historyCloseButton { cursor: pointer; }
 
 div#asset { position: fixed; width: 100vw; top: var(--header-height-dim); height: calc(100vh - var(--header-height-dim)); left: 0px; z-index: 11; background-color: hsla(0, 0%, 100%, 100%); }
 div#asset .wrap { position: absolute; width: 100%; height: 100%; }

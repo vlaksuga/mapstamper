@@ -1,9 +1,12 @@
-	// SETTING ALL VARIABLES
 
+
+    const VERSION = 1.2
     const SUPPRESS_VALUE = 25
     const BASE_API_URL = "https://baul-dev.com/"
     const ASSET_PATH = "asset/"
-    const BASE_IMAGE_ROOT = "https://d2a797flmdiqkv.cloudfront.net/"
+    // const BASE_IMAGE_ROOT = "https://chacha-image.s3.ap-northeast-2.amazonaws.com/"    
+    const BASE_IMAGE_ROOT = "https://d2a797flmdiqkv.cloudfront.net/"    
+    
     
     var isMouseDown = false
     var isDragMode = false
@@ -23,7 +26,6 @@
     var currentForeImage = document.getElementById('foreImage')
     var currentBackImage = document.getElementById('backImage')
 
-    // BUTTONS
     var undoButton = document.getElementById('undoButton')
     var redoButton = document.getElementById('redoButton')
     var symbolHistoryButton = document.getElementById('symbolHistory')
@@ -33,7 +35,7 @@
     var gctx = gcanvas.getContext('2d')
     var bgctx = bgcanvas.getContext('2d')
     var octx = ocanvas.getContext('2d')
-    var rctx = ocanvas.getContext('2d')
+    var rctx = rcanvas.getContext('2d')
     var actionArray = []
     var pathArray = []
     var pathRawArray = []
@@ -53,6 +55,7 @@
     var lastSymbolPosition = { x: 0, y: 0 }
 
 
+    console.log(`VER : ${VERSION}`)
 
     // INIT
     getAssets()
@@ -62,6 +65,7 @@
     createOverlayCanvas();
     
 
+    
     document.addEventListener('keydown', function(event){
         if(event.ctrlKey && event.key === 'z') {
             undoButton.click()
@@ -337,38 +341,37 @@
     
     // REDO
     function redoTexture() {
-        console.log(`redo undocnt ${textureUndoCount}`);
+        console.log(`redo undocnt ${textureUndoCount}`)
         if(textureUndoCount == 0) {
-            console.log('Nothing to redo');
-            return;
+            console.log('Nothing to redo')
+            return
         }   
-        autoDrawTexture(pathArray.length - textureUndoCount + 1);
-        textureUndoCount--;
-        updateUndoButtons(pathArray, textureHistoryBoard);
-        updateHistoryView(pathArray.length - textureUndoCount - 1, textureHistoryBoard);
+        autoDrawTexture(pathArray.length - textureUndoCount + 1)
+        textureUndoCount--
+        updateUndoButtons(pathArray, textureHistoryBoard)
+        updateHistoryView(pathArray.length - textureUndoCount - 1, textureHistoryBoard)
     }
 
     // CANVAS EVENT HANDLERS
-    ocanvas.addEventListener('mousedown', event => { mousedown(event); });
-    ocanvas.addEventListener('mousemove', event => { mousemove(event); });    
-    ocanvas.addEventListener('mouseleave', () => { mouseleave(); });
-    document.addEventListener('mouseup', mouseup);    
+    ocanvas.addEventListener('mousedown', event => { mousedown(event) })
+    ocanvas.addEventListener('mousemove', event => { mousemove(event) })    
+    ocanvas.addEventListener('mouseleave', () => { mouseleave() })
+    document.addEventListener('mouseup', mouseup)
 
     // CREATE BACKGROUND CANVAS
     function createBackgroundCanvas() {        
-        bgcanvas.id = "bgcanvas";
-        bgcanvas.width = currentCanvasSizeX;
-        bgcanvas.height = currentCanvasSizeY;
-        bgcanvas.style.zIndex = 6;
-        bgcanvas.style.position = "absolute";
-        bgcanvas.style.top = 0;
-        bgcanvas.style.left = 0;
-        var img = new Image();
-        img.src = currentBackImage.src;
-        img.onload = function() {
-             bgctx.drawImage(img, 0, 0);
-             container.appendChild(bgcanvas);
-        };       
+        bgcanvas.id = "bgcanvas"
+        bgcanvas.width = currentCanvasSizeX
+        bgcanvas.height = currentCanvasSizeY
+        bgcanvas.style.zIndex = 6
+        bgcanvas.style.position = "absolute"
+        bgcanvas.style.top = 0
+        bgcanvas.style.left = 0
+        currentBackImage.addEventListener('load', function() {
+            console.log('back img loaded')
+            bgctx.drawImage(currentBackImage, 0, 0);
+            container.appendChild(bgcanvas);
+        })
     }
 
     // CREATE FOREGROUND CANVAS
@@ -428,10 +431,38 @@
 
     
     function downloadCanvas() {
-        createResultCanvas()        
-        const backgroundImage = bgcanvas.toDataURL()
-        console.log(backgroundImage)
-        // rctx.drawImage(canvasImage, rcanvas.width, rcanvas.height);
+        createResultCanvas()                
+        const backgroundCanvasImageURL = bgcanvas.toDataURL()
+        const foregroundCanvasImageURL = gcanvas.toDataURL()
+        const canvasImageURL = canvas.toDataURL()
+                      
+        const backgroundCanvasImage = new Image()
+        const foregroundCanvasImage = new Image()
+        const canvasImage = new Image()
+
+        backgroundCanvasImage.src = backgroundCanvasImageURL
+        foregroundCanvasImage.src = foregroundCanvasImageURL
+        canvasImage.src = canvasImageURL                
+                
+
+        backgroundCanvasImage.onload = function() {
+            rctx.drawImage(backgroundCanvasImage, 0, 0, currentCanvasSizeX, currentCanvasSizeY)
+        }
+        foregroundCanvasImage.onload = function() {
+            rctx.drawImage(foregroundCanvasImage, 0, 0, currentCanvasSizeX, currentCanvasSizeY)
+        }
+        canvasImage.onload = function() {
+            rctx.drawImage(canvasImage, 0, 0, currentCanvasSizeX, currentCanvasSizeY)
+        }                
+
+        const resultCanvasImageURL = rcanvas.toDataURL()        
+        const a = document.createElement('a')
+        a.href = resultCanvasImageURL
+        a.download = "result.png"
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+
     }
 
     function save() {    
@@ -679,33 +710,36 @@
         updateHistoryView(array.length - 1, board);
     }
 
-    // GET ASSET
-    function getAssets() {
-        let assetBoard = document.getElementById('assetBoard');        
+
+    function getAssets() {                
         fetch(BASE_API_URL + ASSET_PATH).then(function(response){
             console.log('fectch success')
             return response.json()
-        }).then(function(data){
+        }).then(function(data){            
             assetData = data
-            var keys = Object.keys(assetData);
-            for(i = 0; i < keys.length; i++) {                        
-                assetBoard.appendChild(cloneAssetCategory(keys[i]));
-                let d1 = assetData[keys[i]];
-                let d1Keys = Object.keys(d1);                        
-                for(ii=0; ii < d1Keys.length; ii++) {
-                    // UI // DATA 분리
-                    document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
-                    d1[d1Keys[ii]].forEach( function(ele){
-                        document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));
-                    })
-                }
-            }
+            console.log('update asset Data')
+            drawAssets()            
         }).catch(function(err){
             console.warn('error!!', err)
         })        
     }
 
-    // UPDATE UNDO & REDO BUTTONS
+    function drawAssets() {
+        const assetBoard = document.getElementById('assetBoard');
+        const keys = Object.keys(assetData);
+        for(i = 0; i < keys.length; i++) {                        
+            assetBoard.appendChild(cloneAssetCategory(keys[i]));
+            let d1 = assetData[keys[i]];
+            let d1Keys = Object.keys(d1);                        
+            for(ii=0; ii < d1Keys.length; ii++) {
+                document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
+                d1[d1Keys[ii]].forEach( function(ele){
+                    document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));
+                })
+            }
+        }
+    }
+
     function updateUndoButtons(array, board) {
         undoButton.classList.remove('active');
         redoButton.classList.remove('active');
@@ -732,21 +766,13 @@
         }        
     }
 
-    // CLAER HISTORY BOARD
     function clearHistoryBoard(board){
         while (board.hasChildNodes()) {
             board.removeChild(board.firstChild);
         }               
     }
 
-    // CLAER TEXTURE HISTORY BOARD
-    function clearTextureHistoryBoard(){
-        while (historyBoard.hasChildNodes()) {
-            historyBoard.removeChild(historyBoard.firstChild);
-        }        
-    }
 
-    // CLONE HISTORY
     function cloneHistory(action, index, board) {
         let temp = document.getElementById("temp_history")
         let clone = document.importNode(temp.content, true)
@@ -772,7 +798,7 @@
         return clone
     }
 
-    // CLONE ASSET CATEGORY
+
     function cloneAssetCategory(catName) {
         let temp = document.getElementById("temp_asset_cat");
         let clone = document.importNode(temp.content, true);
@@ -788,34 +814,32 @@
         return clone;
     }
 
-
-    // CLONE ASSET GROUP
     function cloneAssetGroup(keyName){
         let temp = document.getElementById("temp_asset_group");
         let clone = document.importNode(temp.content, true);
-        grouptitle = clone.querySelector('h5');
-        grouptitle.innerHTML = keyName;
-        groupList = clone.querySelector('ul');
-        groupList.id = `ag_${keyName}`;        
+        grouptitle = clone.querySelector('h5')
+        grouptitle.innerHTML = keyName
+        groupList = clone.querySelector('ul')
+        groupList.id = `ag_${keyName}`  
         return clone;
     }
 
-    // CLONE ASSET
+
     function cloneAsset(ele){
-        let temp = document.getElementById("temp_asset");
-        let clone = document.importNode(temp.content, true);
-        let id =`asset_${ele.name.split('.')[0]}`;
-        assetImage = clone.querySelector('img');
-        assetImage.id = id;
-        assetImage.src = `${BASE_IMAGE_ROOT}${ele.name}`;
+        let temp = document.getElementById("temp_asset")
+        let clone = document.importNode(temp.content, true)
+        let id =`asset_${ele.name.split('.')[0]}`
+        assetImage = clone.querySelector('img')
+        assetImage.id = id
+        assetImage.src = `${BASE_IMAGE_ROOT}${ele.name}`
+        assetImage.crossOrigin = 'Anonymous'
         assetImage.addEventListener('click', event => {            
             setCurrentSymbol(event);
-            document.getElementById('asset').style.display = "none";
+            document.getElementById('asset').style.display = "none"
         })        
-        return clone;
+        return clone
     }
 
-    // UPDATE HISTORY VIEW    
     function updateHistoryView(index, board) {
         var array
         if (board == historyBoard) {
@@ -823,24 +847,23 @@
         } else {
             array = pathArray
         }
-        var list = board.querySelectorAll('.stack');            
+        var list = board.querySelectorAll('.stack')
         list.forEach( stack => {
-            stack.classList.remove('active');
-            stack.classList.remove('pending');
+            stack.classList.remove('active')
+            stack.classList.remove('pending')
         });
         if(index == -1) {
             list.forEach( stack => {
-                stack.classList.add('pending');
-            });
-            return;
+                stack.classList.add('pending')
+            })
+            return
         }
-        list[index].classList.add('active');
+        list[index].classList.add('active')
         for(var i = index + 1; i < array.length; i++) {
-            list[i].classList.add('pending');
+            list[i].classList.add('pending')
         }
     }
 
-    // SELECT HISTORY TYPE
     function selectHistoryType(sid) {
         var tabNum = document.getElementById(sid).dataset.btn
         var selectedBoard
