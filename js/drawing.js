@@ -439,9 +439,9 @@
     function downloadCanvas() {
         createResultCanvas()
         mergeCanvas(bgcanvas)
-        .then(msg => mergeCanvas(gcanvas))
-        .then(msg => mergeCanvas(canvas))
-        .then(msg => saveToImageFile())
+        .then(() => mergeCanvas(gcanvas))
+        .then(() => mergeCanvas(canvas))
+        .then(() => saveToImageFile())
     }
 
     function mergeCanvas(canvas) {
