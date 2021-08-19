@@ -20,22 +20,24 @@
     var bgcanvas = document.createElement('canvas')
     var ocanvas = document.createElement('canvas')
     var rcanvas = document.createElement('canvas')
-    var container = document.getElementById('canvasContainer')
-    var historyBoard = document.getElementById('historyBoard')
-    var textureHistoryBoard = document.getElementById('textureHistoryBoard')
-    var currentForeImage = document.getElementById('foreImage')
-    var currentBackImage = document.getElementById('backImage')
 
-    var undoButton = document.getElementById('undoButton')
-    var redoButton = document.getElementById('redoButton')
-    var symbolHistoryButton = document.getElementById('symbolHistory')
-    var textureHistoryButton = document.getElementById('textureHistory')
-    var symbols = document.querySelectorAll('#asset ul li img')
     var ctx = canvas.getContext('2d')
     var gctx = gcanvas.getContext('2d')
     var bgctx = bgcanvas.getContext('2d')
     var octx = ocanvas.getContext('2d')
     var rctx = rcanvas.getContext('2d')
+
+    var container = document.getElementById('canvasContainer')
+    var historyBoard = document.getElementById('historyBoard')
+    var textureHistoryBoard = document.getElementById('textureHistoryBoard')
+    
+    var undoButton = document.getElementById('undoButton')
+    var redoButton = document.getElementById('redoButton')
+    var symbolHistoryButton = document.getElementById('symbolHistory')
+    var textureHistoryButton = document.getElementById('textureHistory')
+    var symbols = document.querySelectorAll('#asset ul li img')
+    
+
     var actionArray = []
     var pathArray = []
     var pathRawArray = []
@@ -48,12 +50,14 @@
     var currentFuzziness = 1
 
     var currentSymbol = document.getElementById('currentSymbol')
+    var currentForeImage = document.getElementById('foreImage')
+    var currentBackImage = document.getElementById('backImage')
+
     var currentGrupId = "ag_love"
     var currentAssetTarget = currentSymbol
     var currentCanvasSizeX = parseInt(document.getElementById("sizeX").value)
     var currentCanvasSizeY = parseInt(document.getElementById("sizeY").value)
     var lastSymbolPosition = { x: 0, y: 0 }
-
 
     console.log(`VER : ${VERSION}`)
 
@@ -367,7 +371,9 @@
         bgcanvas.style.position = "absolute"
         bgcanvas.style.top = 0
         bgcanvas.style.left = 0
-        currentBackImage.addEventListener('load', function() {
+        var img = new Image()
+        img.src = currentBackImage.src
+        img.addEventListener('load', function(){
             console.log('back img loaded')
             bgctx.drawImage(currentBackImage, 0, 0);
             container.appendChild(bgcanvas);
@@ -431,39 +437,38 @@
 
     
     function downloadCanvas() {
-        createResultCanvas()                
-        const backgroundCanvasImageURL = bgcanvas.toDataURL()
-        const foregroundCanvasImageURL = gcanvas.toDataURL()
-        const canvasImageURL = canvas.toDataURL()
-                      
-        const backgroundCanvasImage = new Image()
-        const foregroundCanvasImage = new Image()
-        const canvasImage = new Image()
+        createResultCanvas()
+        mergeCanvas(bgcanvas)
+        .then(msg => mergeCanvas(gcanvas))
+        .then(msg => mergeCanvas(canvas))
+        .then(msg => saveToImageFile())
+    }
 
-        backgroundCanvasImage.src = backgroundCanvasImageURL
-        foregroundCanvasImage.src = foregroundCanvasImageURL
-        canvasImage.src = canvasImageURL                
-                
+    function mergeCanvas(canvas) {
+        return new Promise(resolve => {
+            const canvasImage = new Image()
+            canvasImage.src = canvas.toDataURL()
+            canvasImage.onload = () => {
+                rctx.drawImage(canvasImage, 0, 0, currentCanvasSizeX, currentCanvasSizeY)
+                console.log(`${canvas.id} merged!`)
+                resolve(`${canvas.id} merged!`)
+            }
+        })        
+    }
 
-        backgroundCanvasImage.onload = function() {
-            rctx.drawImage(backgroundCanvasImage, 0, 0, currentCanvasSizeX, currentCanvasSizeY)
-        }
-        foregroundCanvasImage.onload = function() {
-            rctx.drawImage(foregroundCanvasImage, 0, 0, currentCanvasSizeX, currentCanvasSizeY)
-        }
-        canvasImage.onload = function() {
-            rctx.drawImage(canvasImage, 0, 0, currentCanvasSizeX, currentCanvasSizeY)
-        }                
-
-        const resultCanvasImageURL = rcanvas.toDataURL()        
+    function saveToImageFile() { 
         const a = document.createElement('a')
-        a.href = resultCanvasImageURL
-        a.download = "result.png"
+        a.href = rcanvas.toDataURL()
+        a.download = "map.png"
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
-
+        console.log('file created!')
+        rcanvas.parentNode.removeChild(rcanvas)
     }
+    
+
+
 
     function save() {    
         const a = document.createElement("a")                
