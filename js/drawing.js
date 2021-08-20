@@ -3,8 +3,9 @@
     const VERSION = 1.3
     const SUPPRESS_VALUE = 25
     const BASE_API_URL = "https://baul-dev.com/"
-    const ASSET_PATH = "asset/"
+    const SUB_API_URL = "http://3.36.74.100/"
     const BASE_IMAGE_ROOT = "https://s3-asset.s3.ap-northeast-2.amazonaws.com/"    
+    const ASSET_PATH = "asset/"    
     
     
     var isMouseDown = false
@@ -12,6 +13,8 @@
     var isFuzzMode = false
     var isRandomStamp = false
     var isBackgroundMode = false
+    var isFetchSuccessful = true
+    var isUseSubAPI = false
 
     var assetData
     var canvas = document.createElement('canvas')
@@ -184,16 +187,19 @@
     }, false)
 
     currentSymbol.addEventListener('click', function() {
+        Dialog.show()
         currentAssetTarget = currentSymbol
         showAssetPanel('stamp')
     })
 
     currentForeImage.addEventListener('click', function() {
+        Dialog.show()
         currentAssetTarget = currentForeImage
         showAssetPanel('texture')
     })
 
     currentBackImage.addEventListener('click', function() {
+        Dialog.show()
         currentAssetTarget = currentBackImage
         showAssetPanel('texture')
     })
@@ -216,6 +222,7 @@
             }
         })
         view.style.display = 'block'
+        Dialog.hide()
     }
 
 
@@ -726,32 +733,40 @@
     }
 
     // FETCH ASSETS
-    function fetchAssets() {                
-        fetch(BASE_API_URL + ASSET_PATH)
+    function fetchAssets(url) {                
+
+        fetch(url + ASSET_PATH)
         .then(response => {       
+            console.log('Fetch resolved!!')
             document.getElementById('loadDesc').innerHTML = 'Fetching assets'
             return response.json()
         })
         .then(data => {            
             assetData = data
+            isFetchSuccessful = true
             console.log(assetData)
             return drawAssets()            
         })
         .then(array => {
             const len = array.length
             const progress = document.querySelector('progress')
-
-            
             progress.max = len
             array.forEach( img => {
                 document.getElementById(img).onload = function(){
-                    document.getElementById('loadDesc').innerHTML = `Loading asset ${progress.value} / ${len}`
                     progress.value ++
+                    document.getElementById('loadDesc').innerHTML = `Loading asset ${progress.value} / ${len}`
                 }
             })
         })
-        .catch(err => {
+        .catch(err => {        
+            isFetchSuccessful = false
+            document.getElementById('loadDesc').innerHTML = err
             console.warn('Fetch rejected!!', err)
+            if(!isUseSubAPI){
+                console.log(`retry : ${SUB_API_URL}`)
+                fetchAssets(SUB_API_URL)
+            }
+            isUseSubAPI = true            
         })        
     }
 
@@ -772,7 +787,6 @@
                 })
             }
         }
-        console.log(loadImageDataArray)
         return loadImageDataArray     
     }
 
@@ -842,6 +856,9 @@
         let clone = document.importNode(temp.content, true);
         catTitle = clone.querySelector('h3')
         catTitle.innerHTML = catName
+        catTitle.addEventListener('click', e => {
+            console.log(e.target.childNodes)
+        })
         catContainer = clone.querySelector('div')
         catContainer.id = `ac_${catName}`
         if(catName == "Texture") {
@@ -872,6 +889,7 @@
         assetImage.id = id
         assetImage.src = `${BASE_IMAGE_ROOT}${ele.name}`
         assetImage.crossOrigin = 'Anonymous'
+        assetImage.onerror = function() { this.style.display = 'none' }
         assetImage.addEventListener('click', event => {            
             setCurrentSymbol(event)
             document.getElementById('asset').style.display = "none"
@@ -927,14 +945,16 @@
     // INIT APP
     function init() {
         console.log(`VER : ${VERSION}`)        
-        fetchAssets()
+        fetchAssets(BASE_API_URL)
         createForegroundCanvas()    
         createCanvas()
         createOverlayCanvas()
     }
     window.addEventListener('load', function(){
-        document.getElementById('blocker').style.display = 'none'
-        createBackgroundCanvas()
+        if(isFetchSuccessful) {
+            document.getElementById('blocker').style.display = 'none'
+            createBackgroundCanvas()
+        }
     })
 
     // EDIT MODE
@@ -951,7 +971,7 @@
     }
     
     // ROTATE
-    function rotateAsset(evt) {
+    function rotateAsset() {
         const index = 0
         const action = actionArray[index]
         console.log('rotate')
@@ -961,4 +981,22 @@
         // tctx.translate(action.px, action.py)
         // tctx.rotate(15 * (Math.PI / 180))
         // tctx.drawImage(document.getElementById(action.aid), action.px, action.py, action.sx, action.sy)        
+    }
+
+    // SHOW ALERT DIALOG
+    function showAlertDialog(msg){
+        const dialog = document.getElementById('alretDialog')
+        const desc = document.getElementById('dialogDesc')
+        dialog.style.display = 'block'
+        desc.innerHTML = msg
+    }
+
+    // HIDE ALERT DIALOG
+    const Dialog = {
+        show: function(){
+            document.getElementById('alretDialog').style.display = 'block'
+        },
+        hide: function(){
+            document.getElementById('alretDialog').style.display = 'none'
+        }
     }

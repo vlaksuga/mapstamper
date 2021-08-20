@@ -44,7 +44,7 @@
                 <div class="currentSymbol">
                     <div class="currentImageBox">
                         <img id="currentSymbol" src="https://s3-asset.s3.ap-northeast-2.amazonaws.com/love_love_01.png"
-                            alt="symbol" style="width: 120px; height: auto;" data-aid="asset_love_love_01">
+                            alt="symbol" style="width: 120px; height: auto;" data-aid="asset_love_love_01" crossorigin="Anonymous">
                     </div>
 
                 </div>
@@ -72,13 +72,13 @@
                         <div class="foregroundPattern">
                             <h5>Foreground</h5>
                             <img id="foreImage" src="https://s3-asset.s3.ap-northeast-2.amazonaws.com/texture_Land_02.png"
-                                data-aid="asset_texture_Land_02" alt="background" crossorigin="a">
+                                data-aid="asset_texture_Land_02" alt="background" crossorigin="Anonymous">
                         </div>
 
                         <div class="backgroundPattern">
                             <h5>Background</h5>
                             <img id="backImage" src="https://s3-asset.s3.ap-northeast-2.amazonaws.com/texture_Icesnow_04.png"
-                                data-aid="asset_texture_Icesnow_04" alt="foreground" crossorigin="anonymous">
+                                data-aid="asset_texture_Icesnow_04" alt="foreground" crossorigin="Anonymous">
                         </div>
                     </div>
                 </div>
@@ -166,13 +166,14 @@
         </div>
 
         <!-- ALRET DIALOG -->
-        <div id="alretDialog">
+        <div id="alretDialog" style="display: none;">
+            <div id="dialogDesc">Loading...</div>
         </div>
 
-        <!-- ALRET DIALOG -->
+        <!-- Blocker -->
         <div id="blocker">
-                <div id="loadDesc">에셋을 로딩하고 있습니다.</div>
-                <progress id="loadProg" max="100" value="0"></progress>
+            <div id="loadDesc"></div>
+            <progress id="loadProg" max="100" value="0"></progress>
         </div>
 
         <!-- TEMPLATES -->
@@ -183,15 +184,17 @@
         </template>
 
         <template id="temp_asset_group">
-            <h5 class="assetGroupTitle"></h5>
-            <ul class="assetGroupList">
-
-            </ul>
+            <div class="assetGroupContainer">
+                <h5 class="assetGroupTitle"></h5>
+                <ul class="assetGroupList">
+    
+                </ul>
+            </div>
         </template>
 
         <template id="temp_asset_cat">
             <div class="assetCatContainer">
-                <h3 class="assetCatTitle"></h3>
+                <h3 class="assetCatTitle" style="background-color: lightgrey;"></h3>
             </div>
         </template>
 
