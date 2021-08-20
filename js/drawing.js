@@ -19,12 +19,14 @@
     var bgcanvas = document.createElement('canvas')
     var ocanvas = document.createElement('canvas')
     var rcanvas = document.createElement('canvas')
+    var tcanvas = document.createElement('canvas')
 
     var ctx = canvas.getContext('2d')
     var gctx = gcanvas.getContext('2d')
     var bgctx = bgcanvas.getContext('2d')
     var octx = ocanvas.getContext('2d')
     var rctx = rcanvas.getContext('2d')
+    var tctx = rcanvas.getContext('2d')
 
     var container = document.getElementById('canvasContainer')
     var historyBoard = document.getElementById('historyBoard')
@@ -60,7 +62,7 @@
 
 
 
-    
+    init()
 
     
     document.addEventListener('keydown', function(event){
@@ -173,10 +175,13 @@
         this.style.display = 'none'
     })
 
+    document.getElementById('rotate').addEventListener('click', function(){
+        editMode()
+    })
+
     document.getElementById('saveToImage').addEventListener('click', function() {
          downloadCanvas()
     }, false)
-
 
     currentSymbol.addEventListener('click', function() {
         currentAssetTarget = currentSymbol
@@ -347,6 +352,8 @@
     ocanvas.addEventListener('mousedown', event => { mousedown(event) })
     ocanvas.addEventListener('mousemove', event => { mousemove(event) })    
     ocanvas.addEventListener('mouseleave', () => { mouseleave() })
+    
+    tcanvas.addEventListener('mousedown', event => { rotateAsset(event) })
     document.addEventListener('mouseup', mouseup)
 
     // CREATE BACKGROUND CANVAS
@@ -420,6 +427,19 @@
         rcanvas.style.left = 0
         rctx.clearRect(0, 0, rcanvas.width, rcanvas.height)
         container.appendChild(rcanvas)
+    }     
+
+    // CREATE RESULT CANVAS
+    function createTempCanvas() {
+        tcanvas.id = "tcanvas"
+        tcanvas.width = currentCanvasSizeX
+        tcanvas.height = currentCanvasSizeY
+        tcanvas.style.zIndex = 11
+        tcanvas.style.position = "absolute"
+        tcanvas.style.top = 0
+        tcanvas.style.left = 0
+        tctx.clearRect(0, 0, tcanvas.width, tcanvas.height)
+        container.appendChild(tcanvas)
     }     
 
     // DOWNLOAD RESULT CANVAS
@@ -709,12 +729,26 @@
     function fetchAssets() {                
         fetch(BASE_API_URL + ASSET_PATH)
         .then(response => {       
-            console.log('Fetch resolved!!')     
+            document.getElementById('loadDesc').innerHTML = 'Fetching assets'
             return response.json()
         })
         .then(data => {            
             assetData = data
-            drawAssets()            
+            console.log(assetData)
+            return drawAssets()            
+        })
+        .then(array => {
+            const len = array.length
+            const progress = document.querySelector('progress')
+
+            
+            progress.max = len
+            array.forEach( img => {
+                document.getElementById(img).onload = function(){
+                    document.getElementById('loadDesc').innerHTML = `Loading asset ${progress.value} / ${len}`
+                    progress.value ++
+                }
+            })
         })
         .catch(err => {
             console.warn('Fetch rejected!!', err)
@@ -722,20 +756,24 @@
     }
 
     // DRAW ASSETS TO PANEL
-    function drawAssets() {
+    function drawAssets(loadImageDataArray) {
         const assetBoard = document.getElementById('assetBoard');
         const keys = Object.keys(assetData);
+        loadImageDataArray = []
         for(i = 0; i < keys.length; i++) {                        
             assetBoard.appendChild(cloneAssetCategory(keys[i]));
             let d1 = assetData[keys[i]];
             let d1Keys = Object.keys(d1);                        
             for(ii=0; ii < d1Keys.length; ii++) {
                 document.getElementById(`ac_${keys[i]}`).appendChild(cloneAssetGroup(d1Keys[ii]));
-                d1[d1Keys[ii]].forEach( function(ele){
+                d1[d1Keys[ii]].forEach( function(ele) {
                     document.getElementById(`ag_${d1Keys[ii]}`).appendChild(cloneAsset(ele));
+                    loadImageDataArray.push(`asset_${ele.name.split('.')[0]}`)
                 })
             }
         }
+        console.log(loadImageDataArray)
+        return loadImageDataArray     
     }
 
     // UPDATE UNDO BUTTONS UI
@@ -890,13 +928,37 @@
     function init() {
         console.log(`VER : ${VERSION}`)        
         fetchAssets()
-        createBackgroundCanvas()
         createForegroundCanvas()    
         createCanvas()
         createOverlayCanvas()
     }
     window.addEventListener('load', function(){
         document.getElementById('blocker').style.display = 'none'
+        createBackgroundCanvas()
     })
 
-    init()    
+    // EDIT MODE
+    function editMode() {
+        const index = 0
+        const action = actionArray[index]
+        createTempCanvas()
+        setEditStamp(action)
+    }
+
+    // SET EDIT STAMP
+    function setEditStamp(action) {
+        tctx.drawImage(document.getElementById(action.aid), action.px, action.py, action.sx, action.sy)
+    }
+    
+    // ROTATE
+    function rotateAsset(evt) {
+        const index = 0
+        const action = actionArray[index]
+        console.log('rotate')
+        console.log(action)
+        // tctx.clearRect(0, 0, currentCanvasSizeX, currentCanvasSizeY)
+        tctx.fillRect(100, 100, 50, 100)
+        // tctx.translate(action.px, action.py)
+        // tctx.rotate(15 * (Math.PI / 180))
+        // tctx.drawImage(document.getElementById(action.aid), action.px, action.py, action.sx, action.sy)        
+    }

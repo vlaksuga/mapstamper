@@ -22,9 +22,10 @@
             </div>
             <div class="controlBox">
                 <input type="file" name="fileLoader" id="fileInput" style="display: none;">
+                <span id="rotate" class="material-icons active">loop</span>
                 <span id="saveToImage" class="material-icons active">save</span>
                 <span id="load" class="material-icons active">file_download</span>
-                <span id="save" class="material-icons active">file_upload</span>
+                <span id="save" class="material-icons active">file_upload</span>                
             </div>
         </header>
 
@@ -170,7 +171,8 @@
 
         <!-- ALRET DIALOG -->
         <div id="blocker">
-            <span id="loadDesc">에셋을 로딩하고 있습니다.</span>
+                <div id="loadDesc">에셋을 로딩하고 있습니다.</div>
+                <progress id="loadProg" max="100" value="0"></progress>
         </div>
 
         <!-- TEMPLATES -->

@@ -74,7 +74,7 @@ div#assetBoard { margin-top: 50px; height: calc(100vh - var(--header-height-dim)
 div#assetBoard .assetCatTitle { padding: 8px 16px;}
 div#assetBoard .assetGroupTitle { padding: 8px 16px;}
 div#assetBoard ul { display: flex; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; padding: 16px; gap: 10px;} 
-div#assetBoard ul li img { width: 80px; height: 80px; border: 1px solid lightgray ; border-radius: var(--box-radius-dim); display: block; padding: 8px;}
+div#assetBoard ul li img { width: 80px; height: 80px; border: 1px solid lightgray ; border-radius: var(--box-radius-dim); display: block; padding: 8px; cursor: pointer;}
 
 
 .toolbox { color: white; padding: 12px; background-color: black; z-index: 10; box-shadow: 10px 5px 5px var(--shadow-color);   -ms-overflow-style: none;  scrollbar-width: none; }
@@ -101,8 +101,8 @@ canvas#canvas.active { opacity: 0.3; }
 .stack .img { border-radius: 50%; border: 1px solid lightgray; padding: 4px; margin-right: 8px; width: 15px; height: 15px; display: block; }
 
 #foreImage, #backImage { width: 100%; }
-#blocker { width: 100vw; height: 200vh; position: fixed; top: 0; left: 0; z-index: 99; background-color: hsla(0, 0%, 0%, 0%); color: white; text-align: center; padding-top: 200px;}
-
+#blocker { width: 100vw; height: 200vh; position: fixed; top: 0; left: 0; z-index: 99; background-color: hsla(0, 0%, 0%, 80%); color: white; text-align: center; padding-top: 400px;}
+progress { width: 350px;}
 
 /* material icons */
 .material-icons {
