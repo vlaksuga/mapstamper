@@ -1,11 +1,10 @@
 
 
-    const VERSION = 1.2
+    const VERSION = 1.3
     const SUPPRESS_VALUE = 25
     const BASE_API_URL = "https://baul-dev.com/"
     const ASSET_PATH = "asset/"
-    // const BASE_IMAGE_ROOT = "https://chacha-image.s3.ap-northeast-2.amazonaws.com/"    
-    const BASE_IMAGE_ROOT = "https://d2a797flmdiqkv.cloudfront.net/"    
+    const BASE_IMAGE_ROOT = "https://s3-asset.s3.ap-northeast-2.amazonaws.com/"    
     
     
     var isMouseDown = false
@@ -57,16 +56,10 @@
     var currentAssetTarget = currentSymbol
     var currentCanvasSizeX = parseInt(document.getElementById("sizeX").value)
     var currentCanvasSizeY = parseInt(document.getElementById("sizeY").value)
-    var lastSymbolPosition = { x: 0, y: 0 }
+    var lastSymbolPosition = { x: 0, y: 0 }  
 
-    console.log(`VER : ${VERSION}`)
 
-    // INIT
-    getAssets()
-    createBackgroundCanvas();
-    createForegroundCanvas();    
-    createCanvas();
-    createOverlayCanvas();
+
     
 
     
@@ -180,18 +173,10 @@
         this.style.display = 'none'
     })
 
-    
-
     document.getElementById('saveToImage').addEventListener('click', function() {
          downloadCanvas()
     }, false)
 
-    document.getElementById('clearHistory').addEventListener('click', function() {
-        clearHistoryBoard()
-        actionArray = []
-        symbolUndoCount = 0
-        console.log("History Cleared!")
-    });
 
     currentSymbol.addEventListener('click', function() {
         currentAssetTarget = currentSymbol
@@ -214,6 +199,7 @@
     })
 
 
+    // SHOW SELECTED ASSET PANEL
     function showAssetPanel(t) {
         var view = document.getElementById('asset')
         view.querySelector('.title').innerHTML = t
@@ -228,6 +214,7 @@
     }
 
 
+    // AUTO DRAW STAMPS
     function autoDraw(length) {
         createCanvas()
         var rangedArray = getActiveRange(length, actionArray)
@@ -237,7 +224,7 @@
         })
     }
 
-    // AUTO DRAW
+    // AUTO DRAW TEXTURE
     function autoDrawTexture(length) {
         createForegroundCanvas()
         var rangedArray = getActiveRange(length, pathArray)
@@ -249,7 +236,7 @@
         gctx.drawImage(currentForeImage, 0, 0) 
     }
 
-    // GET ACTIVE RANGE
+    // GET ACTIVE RANGE FOR IMAGE STAMPING
     function getActiveRange(length, array) {
         var range = [];
         for (var i=0; i < length; i++) {
@@ -258,7 +245,7 @@
         return range;
     }
 
-    // SORT ARRAY BY POSITION Y
+    // SORT ACTION ARRAY BY Y-AXIS POSITION
     function sortAction(array) {
         var arr = array              
         arr.sort(function (a, b) {
@@ -273,10 +260,10 @@
         return arr
     }
 
-    // REDRAW
+    // BATCH REDRAW FROM HISTORY ARRAYS
     function redraw() {
-        autoDraw(actionArray.length);
         autoDrawTexture(pathArray.length);
+        autoDraw(actionArray.length);        
     }
 
     // SET CURRENT SYMBOL
@@ -296,7 +283,7 @@
         }
     }
 
-    // UNDO
+    // UNDO SYMBOL HISTORY
     function undo(index) {
         if(symbolUndoCount >= actionArray.length) {
             console.log('Nothing to undo');
@@ -313,7 +300,7 @@
         updateHistoryView(actionArray.length - symbolUndoCount - 1, historyBoard);
     }
 
-    // UNDO
+    // UNDO TEXTURE HISTORY
     function undoTexture(index) {
         if(textureUndoCount >= pathArray.length) {
             console.log('Nothing to undo')
@@ -330,7 +317,7 @@
         updateHistoryView(pathArray.length - textureUndoCount - 1, textureHistoryBoard)
     }
 
-    // REDO
+    // REDO SYMBOL HISTORY
     function redo() {
         console.log(`redo undocnt ${symbolUndoCount}`);
         if(symbolUndoCount == 0) {
@@ -343,7 +330,7 @@
         updateHistoryView(actionArray.length - symbolUndoCount - 1, historyBoard)
     }
     
-    // REDO
+    // REDO TEXTURE HISTORY
     function redoTexture() {
         console.log(`redo undocnt ${textureUndoCount}`)
         if(textureUndoCount == 0) {
@@ -376,66 +363,66 @@
         img.addEventListener('load', function(){
             console.log('back img loaded')
             bgctx.drawImage(currentBackImage, 0, 0);
-            container.appendChild(bgcanvas);
+            container.appendChild(bgcanvas)
         })
     }
 
     // CREATE FOREGROUND CANVAS
     function createForegroundCanvas() { 
-        gcanvas.id = "gcanvas";
-        gcanvas.width = currentCanvasSizeX;
-        gcanvas.height = currentCanvasSizeY;
-        gcanvas.style.zIndex = 7;
-        gcanvas.style.position = "absolute";
-        gcanvas.style.top = 0;
-        gcanvas.style.left = 0;
-        var img = new Image();
-        img.src = currentForeImage.src;
-        container.appendChild(gcanvas);
+        gcanvas.id = "gcanvas"
+        gcanvas.width = currentCanvasSizeX
+        gcanvas.height = currentCanvasSizeY
+        gcanvas.style.zIndex = 7
+        gcanvas.style.position = "absolute"
+        gcanvas.style.top = 0
+        gcanvas.style.left = 0
+        var img = new Image()
+        img.src = currentForeImage.src
+        container.appendChild(gcanvas)
     }   
 
     // CREATE CANVAS
     function createCanvas() {
-        canvas.id = "canvas";
-        canvas.width = currentCanvasSizeX;
-        canvas.height = currentCanvasSizeY;
-        canvas.style.zIndex = 9;
-        canvas.style.position = "absolute";
-        canvas.style.top = 0;
-        canvas.style.left = 0;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);   
-        container.appendChild(canvas);        
+        canvas.id = "canvas"
+        canvas.width = currentCanvasSizeX
+        canvas.height = currentCanvasSizeY
+        canvas.style.zIndex = 9
+        canvas.style.position = "absolute"
+        canvas.style.top = 0
+        canvas.style.left = 0
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        container.appendChild(canvas)
     }     
 
 
     // CREATE OVERLAY CANVAS
     function createOverlayCanvas() {
-        ocanvas.id="ocanvas";
-        ocanvas.width = currentCanvasSizeX;
-        ocanvas.height = currentCanvasSizeY;
-        ocanvas.style.zIndex = 10;
-        ocanvas.style.position = "absolute";
-        ocanvas.style.top = 0;
-        ocanvas.style.left = 0;
-        ocanvas.style.opacity = 0.4;
-        octx.clearRect(0, 0, ocanvas.width, ocanvas.height);        
-        container.appendChild(ocanvas);
+        ocanvas.id="ocanvas"
+        ocanvas.width = currentCanvasSizeX
+        ocanvas.height = currentCanvasSizeY
+        ocanvas.style.zIndex = 10
+        ocanvas.style.position = "absolute"
+        ocanvas.style.top = 0
+        ocanvas.style.left = 0
+        ocanvas.style.opacity = 0.4
+        octx.clearRect(0, 0, ocanvas.width, ocanvas.height)
+        container.appendChild(ocanvas)
     }
 
     // CREATE RESULT CANVAS
     function createResultCanvas() {
-        rcanvas.id = "rcanvas";
-        rcanvas.width = currentCanvasSizeX;
-        rcanvas.height = currentCanvasSizeY;
-        rcanvas.style.zIndex = 12;
-        rcanvas.style.position = "absolute";
-        rcanvas.style.top = 0;
-        rcanvas.style.left = 0;
-        rctx.clearRect(0, 0, rcanvas.width, rcanvas.height);   
-        container.appendChild(rcanvas);        
+        rcanvas.id = "rcanvas"
+        rcanvas.width = currentCanvasSizeX
+        rcanvas.height = currentCanvasSizeY
+        rcanvas.style.zIndex = 12
+        rcanvas.style.position = "absolute"
+        rcanvas.style.top = 0
+        rcanvas.style.left = 0
+        rctx.clearRect(0, 0, rcanvas.width, rcanvas.height)
+        container.appendChild(rcanvas)
     }     
 
-    
+    // DOWNLOAD RESULT CANVAS
     function downloadCanvas() {
         createResultCanvas()
         mergeCanvas(bgcanvas)
@@ -444,6 +431,7 @@
         .then(() => saveToImageFile())
     }
 
+    // MERGE CANVAS TO RESULT CANVAS
     function mergeCanvas(canvas) {
         return new Promise(resolve => {
             const canvasImage = new Image()
@@ -456,6 +444,7 @@
         })        
     }
 
+    // SAVE RESULT CANVAS TO IMAGE FILE 
     function saveToImageFile() { 
         const a = document.createElement('a')
         a.href = rcanvas.toDataURL()
@@ -467,9 +456,7 @@
         rcanvas.parentNode.removeChild(rcanvas)
     }
     
-
-
-
+    // SAVE HISTORYS TO JSON FILE
     function save() {    
         const a = document.createElement("a")                
         const settings = { atype: "setting", canvasWidth: currentCanvasSizeX, canvasHeight: currentCanvasSizeY, foreTexture: document.getElementById('foreImage').dataset.aid, backTexture: document.getElementById('backImage').dataset.aid }
@@ -483,13 +470,14 @@
         document.body.removeChild(a)
     }
 
+    // LOAD JSON FILE
     function load(e) {
-        const file = e.target.files[0];
-        console.log(file);
+        const file = e.target.files[0]
+        console.log(file)
         if(!file) {            
-            return;
+            return
         }
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = function(e) {
             const obj = JSON.parse(e.target.result)
             const settings = obj.settings
@@ -500,25 +488,26 @@
             updateSettings(settings)            
             reInit()
         };
-        reader.readAsText(file);    
+        reader.readAsText(file)
     }
 
+    // REINIT
     function reInit() {
         createBackgroundCanvas()
         createForegroundCanvas()
         createCanvas()
         createOverlayCanvas()
         redraw()
-        drawHistory(actionArray, historyBoard);
-        drawHistory(pathArray, textureHistoryBoard);
+        drawHistory(actionArray, historyBoard)
+        drawHistory(pathArray, textureHistoryBoard)
         symbolUndoCount = 0
         textureUndoCount = 0
     }
 
-    
-    function updateCurrentArrays(action, raw) {
+    // UPDATE CURRENT ARRAY
+    function updateCurrentArrays(action, path) {
         actionArray = action.contents
-        pathRawArray = raw.contents        
+        pathRawArray = path.contents        
         const newPath = []
         for(i=0; i < pathRawArray.length; i++) {                                
             const currentPath = new Path2D()        
@@ -534,21 +523,20 @@
         pathArray = newPath
     }
 
+    // UPDATE SETTINGS
     function updateSettings(settings) {
-        // TODO : RESTORE CANVAS SIZE
         const foreImageSrc = document.getElementById(settings.foreTexture).src
         const backImageSrc = document.getElementById(settings.backTexture).src
         document.getElementById('foreImage').src = foreImageSrc
         document.getElementById('backImage').src = backImageSrc
+        currentForeImage.src = foreImageSrc
+        currentBackImage.src = backImageSrc
     }
 
-    // GET MOUSE POSITION
+    // GET MOUSE POSITION FOR DRAW IMAGE
     function getMousePos(evt) {
-        let stempSize = getStempSize();
-        return {
-            x: evt.offsetX - (stempSize.x / 2),
-            y: evt.offsetY - (stempSize.y / 2)
-        };
+        let stempSize = getStempSize()
+        return { x: evt.offsetX - (stempSize.x / 2), y: evt.offsetY - (stempSize.y / 2) }
     }
 
     // ON MOUSE DOWN
@@ -613,6 +601,7 @@
         }
     }
 
+    // STAMP TEXTURE
     function stampTexture(evt) {
         createForegroundCanvas()
         var path = getCurrentPath(evt.offsetX, evt.offsetY, currentVertices)
@@ -620,6 +609,7 @@
         autoDrawTexture(pathArray.length)
     }
 
+    // CHANGE CURRENT STAMP
     function changeCurrentStamp(groupId) {
         var group = document.getElementById(groupId)
         var stamps = group.querySelectorAll('img')
@@ -671,7 +661,7 @@
         isMouseDown = false
     }
 
-    // STORE ACTION
+    // STORE ACTION TO ACTION ARRAY
     function storeAction(action) {
         if(symbolUndoCount != 0) {
             var tempArray = [];
@@ -685,7 +675,7 @@
         drawHistory(actionArray, historyBoard);                      
     }
 
-    // STORE 
+    // STORE PATH TO PATH ARRAY
     function storePath(obj) {
         if(textureUndoCount != 0) {
             var tempPathArray = []
@@ -715,20 +705,23 @@
         updateHistoryView(array.length - 1, board);
     }
 
-
-    function getAssets() {                
-        fetch(BASE_API_URL + ASSET_PATH).then(function(response){
-            console.log('fectch success')
+    // FETCH ASSETS
+    function fetchAssets() {                
+        fetch(BASE_API_URL + ASSET_PATH)
+        .then(response => {       
+            console.log('Fetch resolved!!')     
             return response.json()
-        }).then(function(data){            
+        })
+        .then(data => {            
             assetData = data
-            console.log('update asset Data')
             drawAssets()            
-        }).catch(function(err){
-            console.warn('error!!', err)
+        })
+        .catch(err => {
+            console.warn('Fetch rejected!!', err)
         })        
     }
 
+    // DRAW ASSETS TO PANEL
     function drawAssets() {
         const assetBoard = document.getElementById('assetBoard');
         const keys = Object.keys(assetData);
@@ -745,6 +738,7 @@
         }
     }
 
+    // UPDATE UNDO BUTTONS UI
     function updateUndoButtons(array, board) {
         undoButton.classList.remove('active');
         redoButton.classList.remove('active');
@@ -771,13 +765,14 @@
         }        
     }
 
+    // CLEAR HISTORY BOARD
     function clearHistoryBoard(board){
         while (board.hasChildNodes()) {
             board.removeChild(board.firstChild);
         }               
     }
 
-
+    // CLONE HISTORY FROM TEMPLATE
     function cloneHistory(action, index, board) {
         let temp = document.getElementById("temp_history")
         let clone = document.importNode(temp.content, true)
@@ -803,33 +798,34 @@
         return clone
     }
 
-
+    // CLONE ASSET CATAGORY FROM TEMPLATE
     function cloneAssetCategory(catName) {
         let temp = document.getElementById("temp_asset_cat");
         let clone = document.importNode(temp.content, true);
-        catTitle = clone.querySelector('h3');
-        catTitle.innerHTML = catName;
-        catContainer = clone.querySelector('div');
-        catContainer.id = `ac_${catName}`;
+        catTitle = clone.querySelector('h3')
+        catTitle.innerHTML = catName
+        catContainer = clone.querySelector('div')
+        catContainer.id = `ac_${catName}`
         if(catName == "Texture") {
-            catContainer.dataset.atype = 'texture';
+            catContainer.dataset.atype = 'texture'
         } else {
-            catContainer.dataset.atype = 'stamp';
+            catContainer.dataset.atype = 'stamp'
         }        
-        return clone;
+        return clone
     }
 
+    // CLONE ASSET GROUP FROM TEMPLATE
     function cloneAssetGroup(keyName){
-        let temp = document.getElementById("temp_asset_group");
-        let clone = document.importNode(temp.content, true);
+        let temp = document.getElementById("temp_asset_group")
+        let clone = document.importNode(temp.content, true)
         grouptitle = clone.querySelector('h5')
         grouptitle.innerHTML = keyName
         groupList = clone.querySelector('ul')
         groupList.id = `ag_${keyName}`  
-        return clone;
+        return clone
     }
 
-
+    // CLONE ASSET FROM TEMPLATE
     function cloneAsset(ele){
         let temp = document.getElementById("temp_asset")
         let clone = document.importNode(temp.content, true)
@@ -839,12 +835,13 @@
         assetImage.src = `${BASE_IMAGE_ROOT}${ele.name}`
         assetImage.crossOrigin = 'Anonymous'
         assetImage.addEventListener('click', event => {            
-            setCurrentSymbol(event);
+            setCurrentSymbol(event)
             document.getElementById('asset').style.display = "none"
         })        
         return clone
     }
 
+    // UPDATE HISTORY STACK UI
     function updateHistoryView(index, board) {
         var array
         if (board == historyBoard) {
@@ -869,6 +866,7 @@
         }
     }
 
+    // CHANGE HISTORY UI BY SELETED HISTORY TYPE
     function selectHistoryType(sid) {
         var tabNum = document.getElementById(sid).dataset.btn
         var selectedBoard
@@ -887,3 +885,18 @@
         if( tabNum == "1") { array = actionArray} else { array = pathArray}
         updateUndoButtons(array, selectedBoard)
     }
+
+    // INIT APP
+    function init() {
+        console.log(`VER : ${VERSION}`)        
+        fetchAssets()
+        createBackgroundCanvas()
+        createForegroundCanvas()    
+        createCanvas()
+        createOverlayCanvas()
+    }
+    window.addEventListener('load', function(){
+        document.getElementById('blocker').style.display = 'none'
+    })
+
+    init()    
